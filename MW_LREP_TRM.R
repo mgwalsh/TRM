@@ -126,6 +126,7 @@ for (i in 1:length(grid.list)){
 }
 MW_SI <- as.data.frame(gidsrr)
 mwgrids <- stack(grid.list)
+# plot(mwgrids)
 
 # Write csv
 write.csv(MW_SI, "MW_SI.csv")
