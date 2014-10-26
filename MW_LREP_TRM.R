@@ -107,7 +107,7 @@ plot(ecdf(gidsrr$SRR), main="", verticals=TRUE, col="red", xlab="Site Response R
 
 # Overlay gridded covariates ----------------------------------------------
 
-# Malawi Gtif download (~7.2 Mb)
+# Malawi grids download (~7.2 Mb)
 download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "MW_grids.zip", mode="wb")
 unzip("MW_grids.zip", overwrite=T)
 
@@ -146,8 +146,3 @@ plot(yc.var, yc.fit)
 srr.var <- variogram(SRR~1, MW_SI, cutoff=50)
 srr.fit <- fit.variogram(srr.var, model = vgm(1, "Sph", 50, 1))
 plot(srr.var, srr.fit)
-
-
-
-
-
