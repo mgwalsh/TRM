@@ -52,7 +52,7 @@ for (i in 1:length(grid.list)){
     method = "simple")
 }
 tgrid <- as.data.frame(geot.gid)
-grids <- stack(grid.list)
+kegrids <- stack(grid.list)
 plot(grids)
 
 
