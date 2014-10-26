@@ -108,7 +108,7 @@ plot(ecdf(gidsrr$SRR), main="", verticals=TRUE, col="red", xlab="Site Response R
 # Overlay gridded covariates ----------------------------------------------
 
 # Malawi Gtif download (~7.2 Mb)
-download("https://www.dropbox.com/s/bsnj8q7xt7yziga/MW_grids.zip?dl=0", "MW_grids.zip", mode="wb")
+download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "MW_grids.zip", mode="wb")
 unzip("MW_grids.zip", overwrite=T)
 
 # Grid overlay
