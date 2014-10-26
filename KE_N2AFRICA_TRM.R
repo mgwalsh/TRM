@@ -53,7 +53,7 @@ for (i in 1:length(grid.list)){
 tgrid <- as.data.frame(geot.gid)
 write.csv(tgrid, "VISI_dat.csv")
 
-# Environmental similarities to trial loacations (LID'S) -------------------
+# Environmental (dis)similarities to trial loacations (LID'S) --------------
 
 LID <- aggregate(tgrid[,1:2], by=list(LID=tgrid$LID), mean)
 glist <- list.files(pattern='tif', full.names=TRUE)
