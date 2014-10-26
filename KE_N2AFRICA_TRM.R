@@ -7,11 +7,10 @@ dat_dir <- "/Users/markuswalsh/Documents/Projects/N2AFRICA"
 setwd(dat_dir)
 
 # Required packages
-# install.packages(c("downloader","proj4","raster","gstat")), dependencies=TRUE)
+# install.packages(c("downloader","proj4","dismo")), dependencies=TRUE)
 require(downloader)
 require(proj4)
-require(raster)
-require(gstat)
+require(dismo)
 
 # Data downloads ----------------------------------------------------------
 
@@ -25,7 +24,7 @@ unzip("KE_grids.zip", overwrite=T)
 # generate LAEA CRS & grid ID's -------------------------------------------
 
 # Project to Africa LAEA from LonLat
-geot.laea <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+geot.laea <- as.data.frame(project(cbind(geot$Lon, geot$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geot.laea) <- c("x","y")
 geot <- cbind(geot, geot.laea)
 
@@ -42,18 +41,25 @@ proj4string(geot.gid) = CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_
 
 # Grid overlay ------------------------------------------------------------
 
-grid.list <- c("BSANs.tif","BSASs.tif","BSAVs.tif","CTIs.tif","ELEVs.tif","EVIs.tif","LSTDs.tif","LSTNs.tif","REF1s.tif","REF2s.tif","REF3s.tif","REF7s.tif","RELIs.tif","TMAPs.tif","TMFIs.tif")
+grid.list <- c("BSANs.tif","BSASs.tif","BSAVs.tif","CTIs.tif","ELEVs.tif","EVIAs.tif","LSTDs.tif","LSTNs.tif","REF1s.tif","REF2s.tif","REF3s.tif","REF7s.tif","RELIs.tif","TMAPs.tif","TMFIs.tif")
 for (i in 1:length(grid.list)){
   print(paste("extracting", grid.list[i]))
   grids <- raster(grid.list[i])
-  geos.gid@data[strsplit(grid.list[i], split=".tif")[[1]]] <- extract(
+  geot.gid@data[strsplit(grid.list[i], split=".tif")[[1]]] <- extract(
     x = grids, 
     y = geot.gid,
     method = "simple")
 }
 tgrid <- as.data.frame(geot.gid)
-kegrids <- stack(grid.list)
-plot(grids)
+write.csv(tgrid, "VISI_dat.csv")
+
+# Environmental similarities to trial loacations (LID'S) -------------------
+
+LID <- aggregate(tgrid[,1:2], by=list(LID=tgrid$LID), mean)
+glist <- list.files(pattern='tif', full.names=TRUE)
+grids <- stack(glist)
+mahal <- mahal(grids, LID[,2:3])
+preds <- predict(grids, mahal)
 
 
 
