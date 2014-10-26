@@ -60,6 +60,7 @@ glist <- list.files(pattern='tif', full.names=TRUE)
 grids <- stack(glist)
 mahal <- mahal(grids, LID[,2:3])
 preds <- predict(grids, mahal)
+msims <- exp(-0.5*abs(preds))
 
 
 
