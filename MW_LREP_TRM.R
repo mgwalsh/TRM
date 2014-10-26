@@ -1,7 +1,7 @@
 # Site-level Maize yield responses to fertilizer applications
-# M. Walsh, September 2014
 # Malawi LREP response trial data (courtesy of LREP & Todd Benson)
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
+# M. Walsh, September 2014
 
 # Set local working directory e.g.
 # dat_dir <- "/Users/markuswalsh/Documents/LDSF/Malawi/Fert_resp_models/data"
