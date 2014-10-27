@@ -81,7 +81,7 @@ mh <- mahal(grids, pres)
 emh <- evaluate(pres, back, mh, grids)
 plot(emh, "ROC")
 
-# Plots
+# Profile plots
 mhp <- predict(grids, mh, ext=ext)
 mhp[mhp < -1000] <- -1000
 plot(mhp)
@@ -90,7 +90,7 @@ plot(mhp>mht)
 
 # Regression models -------------------------------------------------------
 
-# stepwise main effects GLM
+# Stepwise main effects GLM
 require(MASS)
 pres.glm <- glm(pb ~ ., family = binomial(link="logit"), data=presback)
 step <- stepAIC(pres.glm)
@@ -114,6 +114,6 @@ plot(roi, add=T)
 points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
-# Export Gtifs
+# Export Gtifs for post-processing in GRASS
 writeRaster(pglm, filename="VISI_glm", format="Gtif", overwrite=T)
-writeRaster(prf, filename="VISI_glm", format="Gtif", overwrite=T)
+writeRaster(prf, filename="VISI_rf", format="Gtif", overwrite=T)
