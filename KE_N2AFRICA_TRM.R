@@ -90,7 +90,7 @@ plot(mhp>mht)
 
 # Regression models -------------------------------------------------------
 
-# GLM
+# stepwise main effects GLM
 require(MASS)
 pres.glm <- glm(pb ~ ., family = binomial(link="logit"), data=presback)
 step <- stepAIC(pres.glm)
@@ -102,7 +102,7 @@ plot(roi, add=T)
 points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
-# Random forest (no tuning, default)
+# Random forest (no tuning default)
 require(randomForest)
 set.seed(1235)
 pres.rf <- randomForest(pb ~ ., importance=T, proximity=T, data=presback)
@@ -114,3 +114,6 @@ plot(roi, add=T)
 points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
+# Export Gtifs
+writeRaster(pglm, filename="VISI_glm", format="Gtif", overwrite=T)
+writeRaster(prf, filename="VISI_glm", format="Gtif", overwrite=T)
