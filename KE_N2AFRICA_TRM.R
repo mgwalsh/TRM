@@ -7,9 +7,10 @@ dat_dir <- "/Users/markuswalsh/Documents/Projects/N2AFRICA"
 setwd(dat_dir)
 
 # Required packages
-# install.packages(c("downloader","proj4","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","proj4","rgeos","dismo")), dependencies=TRUE)
 require(downloader)
 require(proj4)
+require(rgeos)
 require(dismo)
 
 # Data downloads ----------------------------------------------------------
@@ -53,14 +54,24 @@ for (i in 1:length(grid.list)){
 tgrid <- as.data.frame(geot.gid)
 write.csv(tgrid, "VISI_dat.csv")
 
-# Environmental (dis)similarities to trial loacations (LID'S) --------------
+# Environmental (dis)similarities to trial locations (LID'S) --------------
 
 LID <- aggregate(tgrid[,1:2], by=list(LID=tgrid$LID), mean)
 glist <- list.files(pattern='tif', full.names=TRUE)
 grids <- stack(glist)
 mahal <- mahal(grids, LID[,2:3])
 preds <- predict(grids, mahal)
-msims <- exp(-0.5*abs(preds))
+plot(preds)
 
+# Export Gtif
+writeRaster(preds, filename=“VISI_mahal”, format= "GTiff", overwrite = TRUE)
 
+# Trial distribution models -----------------------------------------------
 
+# Generate a 30 km Region of Interest (ROI) buffer around existing trial locations (LID's)
+coordinates(LID) <- ~x+y
+proj4string(LID) <- CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_0=20 +units=m +no_defs")
+buffer <- circles(LID, d=30000, lonlat=F)
+roi <- gUnaryUnion(buffer@polygons)
+plot(roi, axes=T)
+points(LID, pch=3)
