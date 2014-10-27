@@ -64,14 +64,25 @@ preds <- predict(grids, mahal)
 plot(preds)
 
 # Export Gtif
-writeRaster(preds, filename=“VISI_mahal”, format= "GTiff", overwrite = TRUE)
+writeRaster(preds, filename=“VISI_mahal”, format= "GTiff", overwrite=T)
 
-# Trial distribution models -----------------------------------------------
+# Trial distribution model setup ------------------------------------------
 
-# Generate a 30 km Region of Interest (ROI) buffer around existing trial locations (LID's)
+# Generate a "x" km (specify) Region of Interest (ROI) buffer around existing LID's
+x <- 30000
 coordinates(LID) <- ~x+y
 proj4string(LID) <- CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_0=20 +units=m +no_defs")
-buffer <- circles(LID, d=30000, lonlat=F)
+buffer <- circles(LID, d=x, lonlat=F)
 roi <- gUnaryUnion(buffer@polygons)
+
+# Randomly sample the ROI background with n (specify) * no. of trial LID's
+n <- 5
+ext <- extent(roi)
+bsamp <- randomPoints(grids, n=n*length(LID), ext=ext, extf = 1.25)
+backg <- extract(grids, bsamp)
+
+# Plot ROI, trial (LID) and background sample locations
 plot(roi, axes=T)
-points(LID, pch=3)
+points(LID, pch=3, col="blue")
+points(bsamp, pch=3, col="red", cex=0.5)
+
