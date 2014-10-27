@@ -52,7 +52,7 @@ buffer <- circles(pres, d=x, lonlat=F)
 roi <- gUnaryUnion(buffer@polygons)
 
 # Randomly sample the ROI background with B (specify) * no. of trial GID's samples
-B <- 30
+B <- 10
 ext <- extent(roi)
 set.seed(1235813)
 back <- randomPoints(grids, n=B*length(pres), ext=ext, extf = 1)
@@ -69,23 +69,48 @@ gpres <- extract(grids, pres)
 pb <- c(rep(1, nrow(pres)), rep(0, nrow(back)))
 presback <- data.frame(cbind(pb, rbind(gpres, gback)))
 
-# dismo profile models ----------------------------------------------------
+# Dismo profile models (just for illustration) ----------------------------
 
 # Bioclim (for comparison to Mahalanobis distance only)
 bc <- bioclim(grids, pres)
 ebc <- evaluate(pres, back, bc, grids)
 plot(ebc, "ROC")
 
-# Mahalanobis distance
+# Mahalanobis distances from trial locations
 mh <- mahal(grids, pres)
 emh <- evaluate(pres, back, mh, grids)
 plot(emh, "ROC")
+
+# Plots
 mhp <- predict(grids, mh, ext=ext)
 mhp[mhp < -1000] <- -1000
 plot(mhp)
 mht <- threshold(emh, "spec_sens")
 plot(mhp>mht)
 
+# Regression models -------------------------------------------------------
 
+# GLM
+require(MASS)
+pres.glm <- glm(pb ~ ., family = binomial(link="logit"), data=presback)
+step <- stepAIC(pres.glm)
+summary(step)
+pglm <- predict(grids, step, type="response", ext=ext)
+plot(ext, xlab="Easting (m)", ylab="Northing (m)")
+plot(pglm, add=T)
+plot(roi, add=T)
+points(back, pch=3, col="black", cex=0.5)
+points(pres, pch=21, col="red", bg="red")
 
+# Random forest (no tuning, default)
+require(randomForest)
+set.seed(1235)
+pres.rf <- randomForest(pb ~ ., importance=T, proximity=T, data=presback)
+print(pres.rf)
+prf <- predict(grids, pres.rf, ext=ext)
+plot(ext, xlab="Easting (m)", ylab="Northing (m)")
+plot(prf, add=T)
+plot(roi, add=T)
+points(back, pch=3, col="black", cex=0.5)
+points(pres, pch=21, col="red", bg="red")
 
