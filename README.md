@@ -1,4 +1,4 @@
 Treatment response models
 ===============
 
-Case studies of primarily fertilizer treatment responses.
+Case studies of fertilizer treatment responses.
