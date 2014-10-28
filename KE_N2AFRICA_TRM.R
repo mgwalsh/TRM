@@ -114,6 +114,6 @@ plot(roi, add=T)
 points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
-# Export Gtifs for post-processing in GRASS
+# Export Gtifs ... for post-processing
 writeRaster(pglm, filename="VISI_glm", format="Gtif", overwrite=T)
 writeRaster(prf, filename="VISI_rf", format="Gtif", overwrite=T)
