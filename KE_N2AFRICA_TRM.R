@@ -115,3 +115,5 @@ points(pres, pch=21, col="red", bg="red")
 # Export Gtifs ... for post-processing
 writeRaster(pglm, filename="VISI_glm", format="Gtif", overwrite=T)
 writeRaster(prf, filename="VISI_rf", format="Gtif", overwrite=T)
+mean <- mean(pglm, prf)
+writeRaster(mean, filename="VISI_mean", format="Gtif", overwrite=T)
