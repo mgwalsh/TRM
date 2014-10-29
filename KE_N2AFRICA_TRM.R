@@ -124,7 +124,7 @@ points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
 # Export Gtifs ... for post-processing
-writeRaster(pglm, filename="VISI_sim.tif", format="Gtiff", overwrite=T)
+writeRaster(psim, filename="VISI_sim.tif", format="Gtiff", overwrite=T)
 writeRaster(pglm, filename="VISI_glm.tif", format="Gtiff", overwrite=T)
 writeRaster(prf, filename="VISI_rf.tif", format="Gtiff", overwrite=T)
 writeRaster(mean, filename="VISI_mean.tif", format="Gtiff", overwrite=T)
