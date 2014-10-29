@@ -76,17 +76,18 @@ bc <- bioclim(grids, pres)
 ebc <- evaluate(pres, back, bc, grids)
 plot(ebc, "ROC")
 
-# Mahalanobis distances from trial locations
-mh <- mahal(grids, pres)
-emh <- evaluate(pres, back, mh, grids)
+# Mahalanobis distances from trial locations and background
+mhp <- mahal(grids, pres)
+mhb <- mahal(grids, back)
+emh <- evaluate(pres, back, mhp, grids)
 plot(emh, "ROC")
 
 # Profile plots
-mhp <- predict(grids, mh, ext=ext)
-mhp[mhp < -1000] <- -1000
-plot(mhp)
-mht <- threshold(emh, "spec_sens")
-plot(mhp>mht)
+pmhp <- predict(grids, mhp, ext=ext)
+pmhb <- predict(grids, mhb, ext=ext)
+psim <- exp(-0.5*pmhp^2/(exp(-0.5*pmhp^2+exp(-0.5*pmhb^2))))
+plot(psim)
+plot(roi, add=T)
 
 # Regression models -------------------------------------------------------
 
