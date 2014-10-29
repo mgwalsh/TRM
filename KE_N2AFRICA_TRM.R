@@ -10,6 +10,7 @@ setwd(dat_dir)
 # install.packages(c("downloader","proj4","rgeos","dismo")), dependencies=TRUE)
 require(downloader)
 require(proj4)
+require(rgdal)
 require(rgeos)
 require(dismo)
 
@@ -45,7 +46,7 @@ glist <- list.files(pattern='tif', full.names=T)
 grids <- stack(glist)
 
 # Generate a "x" (specify) km Region of Interest (ROI) buffer around existing GID's
-x <- 10000
+x <- 25000
 coordinates(pres) <- ~x+y
 proj4string(pres) <- CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_0=20 +units=m +no_defs")
 buffer <- circles(pres, d=x, lonlat=F)
@@ -54,13 +55,15 @@ roi <- gUnaryUnion(buffer@polygons)
 # Randomly sample the ROI background with B (specify) * no. of trial GID's samples
 B <- 10
 ext <- extent(roi)
-set.seed(1235813)
-back <- randomPoints(grids, n=B*length(pres), ext=ext, extf = 1)
+set.seed(1385321)
+samp <- spsample(roi, n=B*length(pres), type="random", iter=25)
+cell <- cellFromXY(grids, samp)
+cell <- unique(cell)
+back <- xyFromCell(grids, cell)
 gback <- extract(grids, back)
 
 # Plot ROI, trial GID's and background sample locations
-plot(ext, xlab="Easting (m)", ylab="Northing (m)")
-plot(roi, add=T)
+plot(roi, axes=T, xlab="Easting", ylab="Northing")
 points(back, pch=3, col="grey", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
@@ -121,7 +124,7 @@ points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
 # Export Gtifs ... for post-processing
-writeRaster(psim, filename="VISI_dis", format="Gtif", overwrite=T)
-writeRaster(pglm, filename="VISI_glm", format="Gtif", overwrite=T)
-writeRaster(prf, filename="VISI_rf", format="Gtif", overwrite=T)
-writeRaster(mean, filename="VISI_mean", format="Gtif", overwrite=T)
+writeRaster(pglm, filename="VISI_sim.tif", format="Gtiff", overwrite=T)
+writeRaster(pglm, filename="VISI_glm.tif", format="Gtiff", overwrite=T)
+writeRaster(prf, filename="VISI_rf.tif", format="Gtiff", overwrite=T)
+writeRaster(mean, filename="VISI_mean.tif", format="Gtiff", overwrite=T)
