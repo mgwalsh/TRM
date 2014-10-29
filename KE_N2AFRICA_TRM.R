@@ -24,7 +24,7 @@ unzip("KE_grids.zip", overwrite=T)
 
 # Generate LAEA CRS & grid ID's -------------------------------------------
 
-# Project to Africa LAEA from LonLat
+# Project to Africa LAEA from LongLat
 geos.laea <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geos.laea) <- c("x","y")
 geos <- cbind(geos, geos.laea)
@@ -45,7 +45,7 @@ glist <- list.files(pattern='tif', full.names=T)
 grids <- stack(glist)
 
 # Generate a "x" (specify) km Region of Interest (ROI) buffer around existing GID's
-x <- 25000
+x <- 10000
 coordinates(pres) <- ~x+y
 proj4string(pres) <- CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_0=20 +units=m +no_defs")
 buffer <- circles(pres, d=x, lonlat=F)
