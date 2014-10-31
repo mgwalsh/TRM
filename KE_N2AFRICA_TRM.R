@@ -42,7 +42,7 @@ geos.gid <- cbind(geos, GID)
 # Distribution model (DM) setup -------------------------------------------
 
 pres <- aggregate(geos.gid[,9:10], by=list(GID=geos.gid$GID), mean)
-glist <- list.files(pattern='tif', full.names=T)
+glist <- list.files(pattern="tif", full.names=T)
 grids <- stack(glist)
 
 # Generate a "x" (specify) km Region of Interest (ROI) buffer around existing GID's
@@ -124,6 +124,8 @@ points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
 # Export Gtifs ... for post-processing
+out_dir <- "/Users/markuswalsh/Documents/Projects/N2AFRICA/Results"
+setwd(out_dir)
 writeRaster(psim, filename="VISI_sim.tif", format="Gtiff", overwrite=T)
 writeRaster(pglm, filename="VISI_glm.tif", format="Gtiff", overwrite=T)
 writeRaster(prf, filename="VISI_rf.tif", format="Gtiff", overwrite=T)
