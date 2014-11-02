@@ -1,5 +1,5 @@
-# Spatial models of site-level control yields (Yc) and ferilizer treatment response ratio indices (SRI).
-# Malawi LREP response trial data (courtesy of LREP & Todd Benson).
+# Spatial models of site-level control yields (Yc) and treatment response ratio indices (SRI)
+# Malawi LREP response trial data (courtesy of LREP & Todd Benson)
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
 # M. Walsh, October 2014
@@ -32,22 +32,21 @@ projection(mwsite) <- projection(mwgrid)
 exgrid <- extract(mwgrid, mwsite)
 Yc <- mwsite$Yc
 SRI <- mwsite$SRI
-ycex <- data.frame(cbind(Yc, exgrid))
-srex <- data.frame(cbind(SRI, exgrid))
+ycdat <- data.frame(cbind(Yc, exgrid))
+srdat <- data.frame(cbind(SRI, exgrid))
 
 # Regression models -------------------------------------------------------
 
 # Stepwise main effects GLM's
 require(MASS)
 ## Control yield predictions (Yc)
-Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), data=ycex)
+Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), data=ycdat)
 Yc.step <- stepAIC(Yc.glm)
 summary(Yc.step)
 ycglm.pred <- predict(mwgrid, Yc.step, type="response")
 plot(ycglm.pred)
-# points(mwsite, pch=3, col="black", cex=0.2)
 ## Site response index predictions (SRI)
-SRI.glm <- glm(SRI ~ ., family=gaussian, data=srex)
+SRI.glm <- glm(SRI ~ ., family=gaussian, data=srdat)
 SRI.step <- stepAIC(SRI.glm)
 summary(SRI.step)
 sriglm.pred <- predict(mwgrid, SRI.step, type="response")
@@ -56,15 +55,15 @@ plot(sriglm.pred)
 # Random forests (no tuning default)
 require(randomForest)
 ## Control yield predictions (Yc)
-Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycex)
+Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycdat)
 ycrf.pred <- predict(mwgrid, Yc.rf)
 plot(ycrf.pred)
 ## Site response index predictions (SRI)
-SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srex)
+SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf.pred <- predict(mwgrid, SRI.rf)
 plot(srirf.pred)
 
-# Unweighted mean model (glm & rf model averages)
+# Unweighted mean regression model (glm & rf model averages)
 ## Control yield predictions (Yc)
 myc.pred <- mean(ycglm.pred, ycrf.pred)
 plot(myc.pred)
