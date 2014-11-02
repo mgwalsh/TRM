@@ -33,7 +33,9 @@ exgrid <- extract(mwgrid, mwsite)
 Yc <- mwsite$Yc
 SRI <- mwsite$SRI
 ycdat <- data.frame(cbind(Yc, exgrid))
+ycdat <- na.omit(ycdat)
 srdat <- data.frame(cbind(SRI, exgrid))
+srdat <- na.omit(srdat)
 
 # Regression models -------------------------------------------------------
 
@@ -63,10 +65,17 @@ SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf.pred <- predict(mwgrid, SRI.rf)
 plot(srirf.pred)
 
-# Unweighted mean regression model (glm & rf model averages)
+# Unweighted mean regression prediction ensemble (glm & rf models)
 ## Control yield predictions (Yc)
 myc.pred <- mean(ycglm.pred, ycrf.pred)
 plot(myc.pred)
 ## Site response index predictions (SRI)
 msri.pred <- mean(sriglm.pred, srirf.pred)
 plot(msri.pred)
+
+# Regression kriging ------------------------------------------------------
+
+# gstat
+require(gstat)
+## Control yield predictions (Yc)
+
