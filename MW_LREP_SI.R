@@ -4,16 +4,14 @@
 # M. Walsh, September 2014
 
 # Set local working directory e.g.
-# dat_dir <- "/Users/markuswalsh/Documents/LDSF/Malawi/Fert_resp_models/data"
-# setwd(dat_dir)
+dat_dir <- "~/Documents/Data/Malawi/Fert_resp_models"
+setwd(dat_dir)
 
 # Required packages
-# install.packages(c("downloader","proj4","raster","arm", "gstat")), dependencies=TRUE)
+# install.packages(c("downloader","proj4","arm",)), dependencies=TRUE)
 require(downloader)
 require(proj4)
-require(raster)
 require(arm)
-require(gstat)
 
 # Response trial data ------------------------------------------------------
 
@@ -29,8 +27,8 @@ tr <- ptransform(mw, '+proj=utm +zone=36 +south +datum=WGS84 +units=m +no_defs',
 colnames(tr) <- c("x","y","z")
 mwsite <- cbind(mwsite, tr)
 
-# Specify grid cell ID's (GID)
-# Define pixel scale (res.pixel, in m)
+# Define unique grid cell ID's (GID)
+# Specify pixel scale (res.pixel, in m)
 res.pixel <- 1000
 
 # Grid ID (GID) definition
@@ -40,10 +38,6 @@ gidx <- ifelse(mwsite$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
 gidy <- ifelse(mwsite$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 mwsite.gid <- cbind(mwsite, GID)
-
-# Grid cell center point locations
-mwsite.gid$X <- (ceiling(mwsite.gid$x/res.pixel)*1000)-0.5*res.pixel
-mwsite.gid$Y <- (ceiling(mwsite.gid$y/res.pixel)*1000)-0.5*res.pixel
 
 # Merge location w trial data
 mwresp <- merge(mwsite.gid, mtrial, by="LID")
@@ -86,42 +80,21 @@ plot(log(Yt/Yc)~fitted(mlm2), xlim=c(-2,8), ylim=c(-2,8), xlab="Modeled log(Yt/Y
 abline(0,1, col="red")
 # plot(residuals(mlm2)~fitted(mlm2), xlim=c(-2,8), ylim=c(-2,2), xlab="Modeled RR", ylab="Model residuals", mwresp)
 
-# Extract mean control yields and site response ratios at GID's  ----------
+# Extract mean control yield and response ratio indices at GID's ----------
 
 mlm2.ran <- ranef(mlm2)
 gidsrr <- as.data.frame(rownames(mlm2.ran$GID))
 colnames(gidsrr) <- c("GID")
-x <- aggregate(mwsite.gid$X, by=list(mwsite.gid$GID), FUN="mean")
+x <- aggregate(mwsite.gid$x, by=list(mwsite.gid$GID), FUN="mean")
 colnames(x) <- c("GID", "Easting")
-y <- aggregate(mwsite.gid$Y, by=list(mwsite.gid$GID), FUN="mean")
+y <- aggregate(mwsite.gid$y, by=list(mwsite.gid$GID), FUN="mean")
 colnames(y) <- c("GID", "Northing")
 Yc <- aggregate(mwresp$Yc, by=list(mwresp$GID), FUN="mean")
 colnames(Yc) <- c("GID", "Yc")
 gidsrr <- merge(gidsrr, x, by="GID")
 gidsrr <- merge(gidsrr, y, by="GID")
 gidsrr <- merge(gidsrr, Yc, by="GID")
-gidsrr$SRR <- mlm2.ran$GID[,1]
+gidsrr$SRI <- mlm2.ran$GID[,1]
 
-# Overlay gridded covariates ----------------------------------------------
-
-# Malawi grids download (~7.2 Mb)
-download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "MW_grids.zip", mode="wb")
-unzip("MW_grids.zip", overwrite=T)
-
-# Grid overlay
-coordinates(gidsrr) <- ~Easting+Northing
-proj4string(gidsrr) <- CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_0=20 +no_defs")
-
-grid.list <- c("BSANs.tif","BSASs.tif","BSAVs.tif","CTIs.tif","ELEVs.tif","EVIs.tif","LSTDs.tif","LSTNs.tif","REF1s.tif","REF2s.tif","REF3s.tif","REF7s.tif","RELIs.tif","TMAPs.tif","TMFIs.tif")
-for (i in 1:length(grid.list)){
-  print(paste("extracting", grid.list[i]))
-  grid.cov <- raster(grid.list[i]) 
-  gidsrr@data[strsplit(grid.list[i], split=".tif")[[1]]] <- extract(
-    x = grid.cov, 
-    y = gidsrr,
-    method = "simple")
-}
-MW_SI <- as.data.frame(gidsrr)
-glist <- list.files(pattern="tif", full.names=T)
-mwgrids <- stack(grid.list)
-
+# Write site index file
+write.csv(gidsrr, "MW_Site_Indices.csv", row.names=F)
