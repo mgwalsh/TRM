@@ -64,7 +64,7 @@ SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srex)
 srirf.pred <- predict(mwgrid, SRI.rf)
 plot(srirf.pred)
 
-# Unweighted mean model (glm & rf)
+# Unweighted mean model (glm & rf model averages)
 ## Control yield predictions (Yc)
 myc.pred <- mean(ycglm.pred, ycrf.pred)
 plot(myc.pred)
