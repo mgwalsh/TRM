@@ -77,7 +77,7 @@ mlm2 <- lmer(log(Yt/Yc)~log(Yc)+NPS+Urea+log(Yc)*NPS+log(Yc)*Urea+(1|GID)+(1|Yea
 summary(mlm2)
 anova(mlm1, mlm2)
 
-# Aside: Conditional odds model of doubling yield
+# Not run: Conditional odds model of doubling yield
 # mlm3 <- glmer(I(log(Yt/Yc)>log(2))~log(Yc)+NPS+Urea+log(Yc)*NPS+log(Yc)*Urea+(1|GID)+(1|Year/GID), family=binomial(link="logit"), data=mwresp)
 # display(mlm3)
 
@@ -102,9 +102,6 @@ gidsrr <- merge(gidsrr, y, by="GID")
 gidsrr <- merge(gidsrr, Yc, by="GID")
 gidsrr$SRR <- mlm2.ran$GID[,1]
 
-# ECDF plot of GID-level Site Response Ratios
-plot(ecdf(gidsrr$SRR), main="", verticals=TRUE, col="red", xlab="Site Response Ratio", ylab="Cum. proportion of observations", lty=1, lwd=1, do.points=FALSE)
-
 # Overlay gridded covariates ----------------------------------------------
 
 # Malawi grids download (~7.2 Mb)
@@ -125,24 +122,6 @@ for (i in 1:length(grid.list)){
     method = "simple")
 }
 MW_SI <- as.data.frame(gidsrr)
+glist <- list.files(pattern="tif", full.names=T)
 mwgrids <- stack(grid.list)
-# plot(mwgrids)
 
-# Write csv
-write.csv(MW_SI, "MW_SI.csv")
-
-# Control yield & SRR variograms ------------------------------------------
-
-MW_SI$x <- MW_SI$x/1000
-MW_SI$y <- MW_SI$y/1000
-coordinates(MW_SI) <- ~x+y
-
-# Mean GID-level control yield variogram 
-yc.var <- variogram(I(Yc/1000)~1, MW_SI, cutoff=50)
-yc.fit <- fit.variogram(yc.var, model = vgm(1, "Sph", 50, 1))
-plot(yc.var, yc.fit)
-
-# Mean GID-level response ratio variogram
-srr.var <- variogram(SRR~1, MW_SI, cutoff=50)
-srr.fit <- fit.variogram(srr.var, model = vgm(1, "Sph", 50, 1))
-plot(srr.var, srr.fit)
