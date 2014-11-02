@@ -27,7 +27,7 @@ tr <- ptransform(mw, '+proj=utm +zone=36 +south +datum=WGS84 +units=m +no_defs',
 colnames(tr) <- c("x","y","z")
 mwsite <- cbind(mwsite, tr)
 
-# Define unique grid cell ID's (GID)
+# Define unique grid cell / site ID's (GID)
 # Specify pixel scale (res.pixel, in m)
 res.pixel <- 1000
 
@@ -46,17 +46,17 @@ mwresp <- merge(mwsite.gid, mtrial, by="LID")
 trt1 <- subset(mwresp, NPS==1 & Urea==1, select=c(Yt,Yc)) 
 trt2 <- subset(mwresp, NPS==2 & Urea==2, select=c(Yt,Yc)) 
 trt3 <- subset(mwresp, NPS==2 & Urea==3, select=c(Yt,Yc))
-plot(ecdf(mwresp$Yc), main="", xlab="Maize yield (kg/ha)", ylab="Cum. proportion of observations", xlim=c(-50, 8050), verticals=TRUE, lty=1, lwd=2, col="red", do.points=FALSE)
+plot(ecdf(mwresp$Yc), main="", xlab="Maize yield (kg/ha)", ylab="Cum. proportion of observations", xlim=c(-50, 8050), verticals=T, lty=1, lwd=2, col="red", do.points=F)
 abline(0.5,0, lty=2, col="grey")
-plot(ecdf(trt1$Yt), add=T, verticals=TRUE, lty=1, lwd=1, col="grey", do.points=FALSE)
-plot(ecdf(trt2$Yt), add=T, verticals=TRUE, lty=1, lwd=1, col="grey", do.points=FALSE)
-plot(ecdf(trt3$Yt), add=T, verticals=TRUE, lty=1, lwd=1, col="grey", do.points=FALSE)
+plot(ecdf(trt1$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+plot(ecdf(trt2$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 
 # ECDF plots of treatment response ratios
-plot(ecdf(log(trt1$Yt/trt1$Yc)), main="", verticals=TRUE, lty=1, lwd=1, xlim=c(-0.5,3), xlab="Treatment response ratio = log(Yt/Yc)", ylab="Cum. proportion of observations", do.points=FALSE)
+plot(ecdf(log(trt1$Yt/trt1$Yc)), main="", verticals=T, lty=1, lwd=1, xlim=c(-0.5,3), xlab="Treatment response ratio = log(Yt/Yc)", ylab="Cum. proportion of observations", do.points=F)
 abline(0.5,0, lty=2)
-plot(ecdf(log(trt2$Yt/trt2$Yc)), add=T, main="", verticals=TRUE, lty=1, lwd=1, do.points=FALSE)
-plot(ecdf(log(trt3$Yt/trt3$Yc)), add=T, main="", verticals=TRUE, lty=1, lwd=1, do.points=FALSE)
+plot(ecdf(log(trt2$Yt/trt2$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.points=F)
+plot(ecdf(log(trt3$Yt/trt3$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.points=F)
 
 # Response ratio plot
 plot(log(Yt/Yc)~log(Yc), ylab="Treatment response ratio = log(Yijk/Y0jk)", xlab="Unfertilized control yield = log(Y0jk)", mwresp)
@@ -80,7 +80,7 @@ plot(log(Yt/Yc)~fitted(mlm2), xlim=c(-2,8), ylim=c(-2,8), xlab="Modeled log(Yt/Y
 abline(0,1, col="red")
 # plot(residuals(mlm2)~fitted(mlm2), xlim=c(-2,8), ylim=c(-2,2), xlab="Modeled RR", ylab="Model residuals", mwresp)
 
-# Extract mean control yield and response ratio indices at GID's ----------
+# Extract control yield and response ratio indices at GID's ----------
 
 mlm2.ran <- ranef(mlm2)
 gidsrr <- as.data.frame(rownames(mlm2.ran$GID))
