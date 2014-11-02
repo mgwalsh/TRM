@@ -1,5 +1,4 @@
-# Spatial models of site-level control yields (Yc),
-# and ferilizer treatment response ratio indices (SRI).
+# Spatial models of site-level control yields (Yc) and ferilizer treatment response ratio indices (SRI).
 # Malawi LREP response trial data (courtesy of LREP & Todd Benson).
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
@@ -26,7 +25,7 @@ unzip("MW_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
 mwgrid <- stack(glist)
 
-# Overlay gridded covariates ----------------------------------------------
+# Overlay gridded covariates & generate dataframes ------------------------
 
 coordinates(mwsite) <- ~Easting+Northing
 projection(mwsite) <- projection(mwgrid)
