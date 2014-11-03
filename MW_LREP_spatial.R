@@ -44,15 +44,24 @@ require(MASS)
 ## Control yield predictions (Yc)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), data=ycdat)
 Yc.step <- stepAIC(Yc.glm)
-summary(Yc.step)
 ycglm <- predict(mwgrid, Yc.step, type="response")
 plot(ycglm)
 ## Site response index predictions (SRI)
 SRI.glm <- glm(SRI ~ ., family=gaussian, data=srdat)
 SRI.step <- stepAIC(SRI.glm)
-summary(SRI.step)
 sriglm <- predict(mwgrid, SRI.step, type="response")
 plot(sriglm)
+
+# Regression trees
+require(rpart)
+## Control yield predictions (Yc)
+Yc.rt <- rpart(Yc ~ ., data=ycdat)
+ycrt <- predict(mwgrid, Yc.rt)
+plot(ycrt)
+## Site response index predictions (SRI)
+SRI.rt <- rpart(SRI ~ ., data=srdat)
+srirt <- predict(mwgrid, SRI.rt)
+plot(srirt)
 
 # Random forests (no tuning default)
 require(randomForest)
@@ -65,20 +74,25 @@ SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf <- predict(mwgrid, SRI.rf)
 plot(srirf)
 
-# Unweighted mean prediction ensemble (glm & rf models)
+# Unweighted mean prediction ensemble (glm, rt & rf models)
 ## Control yield predictions (Yc)
-myc <- mean(ycglm, ycrf)
+myc <- mean(ycglm, ycrt, ycrf)
 plot(myc)
 ## Site response index predictions (SRI)
-msri <- mean(sriglm, srirf)
+msri <- mean(sriglm, srirt, srirf)
 plot(msri)
 
-# Write predictions -------------------------------------------------------
+# Write regression predictions --------------------------------------------
 
-regpred <- stack(ycglm, sriglm, ycrf, srirf)
+ycpred <- stack(ycglm, ycrt, ycrf)
+names(ycpred) <- c("ycglm", "ycrt", "ycrf")
 if (require(rgdal)){
-  rp <- writeRaster(regpred, filename="regpred.tif", options="INTERLEAVE=BAND", overwrite=T)
-  names(rp) <- c("ycglm","sriglm","ycrf","srirf")
+  yc <- writeRaster(ycpred, filename="ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 }
 
+sripred <- stack(sriglm, srirt, srirf)
+names(ycpred) <- c("sriglm", "srirt", "srirf")
+if (require(rgdal)){
+  yc <- writeRaster(sripred, filename="sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+}
 
