@@ -45,37 +45,40 @@ require(MASS)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), data=ycdat)
 Yc.step <- stepAIC(Yc.glm)
 summary(Yc.step)
-ycglm.pred <- predict(mwgrid, Yc.step, type="response")
-plot(ycglm.pred)
+ycglm <- predict(mwgrid, Yc.step, type="response")
+plot(ycglm)
 ## Site response index predictions (SRI)
 SRI.glm <- glm(SRI ~ ., family=gaussian, data=srdat)
 SRI.step <- stepAIC(SRI.glm)
 summary(SRI.step)
-sriglm.pred <- predict(mwgrid, SRI.step, type="response")
-plot(sriglm.pred)
+sriglm <- predict(mwgrid, SRI.step, type="response")
+plot(sriglm)
 
 # Random forests (no tuning default)
 require(randomForest)
 ## Control yield predictions (Yc)
 Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycdat)
-ycrf.pred <- predict(mwgrid, Yc.rf)
-plot(ycrf.pred)
+ycrf <- predict(mwgrid, Yc.rf)
+plot(ycrf)
 ## Site response index predictions (SRI)
 SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
-srirf.pred <- predict(mwgrid, SRI.rf)
-plot(srirf.pred)
+srirf <- predict(mwgrid, SRI.rf)
+plot(srirf)
 
-# Unweighted mean regression prediction ensemble (glm & rf models)
+# Unweighted mean prediction ensemble (glm & rf models)
 ## Control yield predictions (Yc)
-myc.pred <- mean(ycglm.pred, ycrf.pred)
-plot(myc.pred)
+myc <- mean(ycglm, ycrf)
+plot(myc)
 ## Site response index predictions (SRI)
-msri.pred <- mean(sriglm.pred, srirf.pred)
-plot(msri.pred)
+msri <- mean(sriglm, srirf)
+plot(msri)
 
-# Regression kriging ------------------------------------------------------
+# Write predictions -------------------------------------------------------
 
-# gstat
-require(gstat)
-## Control yield predictions (Yc)
+regpred <- stack(ycglm, sriglm, ycrf, srirf)
+if (require(rgdal)){
+  rp <- writeRaster(regpred, filename="regpred.tif", options="INTERLEAVE=BAND", overwrite=T)
+  names(rp) <- c("ycglm","sriglm","ycrf","srirf")
+}
+
 
