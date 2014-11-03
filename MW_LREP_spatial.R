@@ -91,7 +91,7 @@ if (require(rgdal)){
 }
 
 sripred <- stack(sriglm, srirt, srirf)
-names(ycpred) <- c("sriglm", "srirt", "srirf")
+names(sripred) <- c("sriglm", "srirt", "srirf")
 if (require(rgdal)){
   yc <- writeRaster(sripred, filename="sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 }
