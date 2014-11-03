@@ -82,17 +82,13 @@ plot(myc)
 msri <- mean(sriglm, srirt, srirf)
 plot(msri)
 
-# Write regression predictions --------------------------------------------
+# Not run: Write regression predictions -----------------------------------
 
-ycpred <- stack(ycglm, ycrt, ycrf)
-names(ycpred) <- c("ycglm", "ycrt", "ycrf")
-if (require(rgdal)){
-  yc <- writeRaster(ycpred, filename="ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-}
+# ycpred <- stack(ycglm, ycrt, ycrf)
+# names(ycpred) <- c("ycglm", "ycrt", "ycrf")
+# writeRaster(ycpred, filename="ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# sripred <- stack(sriglm, srirt, srirf)
+# names(sripred) <- c("sriglm", "srirt", "srirf")
+# writeRaster(sripred, filename="sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
-sripred <- stack(sriglm, srirt, srirf)
-names(sripred) <- c("sriglm", "srirt", "srirf")
-if (require(rgdal)){
-  yc <- writeRaster(sripred, filename="sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-}
 
