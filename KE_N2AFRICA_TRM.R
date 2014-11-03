@@ -3,7 +3,7 @@
 # M. Walsh, October 2014
 
 # Set local working directory e.g.
-dat_dir <- "/Users/markuswalsh/Documents/Projects/N2AFRICA"
+dat_dir <- "~/Documents/Data/N2AFRICA"
 setwd(dat_dir)
 
 # Required packages
