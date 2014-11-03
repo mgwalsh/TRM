@@ -123,10 +123,7 @@ plot(roi, add=T)
 points(back, pch=3, col="black", cex=0.5)
 points(pres, pch=21, col="red", bg="red")
 
-# Export Gtifs ... for post-processing
-out_dir <- "/Users/markuswalsh/Documents/Projects/N2AFRICA/Results"
-setwd(out_dir)
-writeRaster(psim, filename="VISI_sim.tif", format="Gtiff", overwrite=T)
-writeRaster(pglm, filename="VISI_glm.tif", format="Gtiff", overwrite=T)
-writeRaster(prf, filename="VISI_rf.tif", format="Gtiff", overwrite=T)
-writeRaster(mean, filename="VISI_mean.tif", format="Gtiff", overwrite=T)
+# Not run: Export Gtifs ... for post-processing
+# out <- stack(pglm, prf)
+# names(out) <- c("pglm","prf")
+# writeRaster(out, filename="preds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
