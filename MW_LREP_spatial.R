@@ -19,7 +19,7 @@ require(raster)
 download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "MW_Site_Indices.csv", mode="wb")
 mwsite <- read.table("MW_Site_Indices.csv", header=T, sep=",")
 
-# Malawi grids download (~7.2 Mb)
+# Malawi grids download (~7.5 Mb)
 download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "MW_grids.zip", mode="wb")
 unzip("MW_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
