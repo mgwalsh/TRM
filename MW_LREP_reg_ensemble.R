@@ -26,9 +26,10 @@ glist <- list.files(pattern="tif", full.names=T)
 mwgrid <- stack(glist)
 
 # Split the site data into train and test sets ----------------------------
+# Hold-out ~1/4 to 1/3 of the site data
 set.seed(1385321)
 index <- 1:nrow(mwsite)
-testn <- sample(index, trunc(length(index)/3))
+testn <- sample(index, trunc(length(index)/4))
 test <- na.omit(mwsite[testn,-6])
 train <- na.omit(mwsite[-testn,-6])
 
