@@ -16,7 +16,6 @@ require(proj4)
 require(raster)
 
 # Data download -----------------------------------------------------------
-
 download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "MW_Site_Indices.csv", mode="wb")
 mwsite <- read.table("MW_Site_Indices.csv", header=T, sep=",")
 
@@ -27,7 +26,6 @@ glist <- list.files(pattern="tif", full.names=T)
 mwgrid <- stack(glist)
 
 # Overlay gridded covariates & generate dataframes ------------------------
-
 coordinates(mwsite) <- ~Easting+Northing
 projection(mwsite) <- projection(mwgrid)
 exgrid <- extract(mwgrid, mwsite)
@@ -39,10 +37,8 @@ srdat <- data.frame(cbind(SRI, exgrid))
 srdat <- na.omit(srdat)
 
 # Regression models -------------------------------------------------------
-
 # Stepwise main effects GLM's
 require(MASS)
-
 # Control yield predictions (Yc)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), ycdat)
 Yc.step <- stepAIC(Yc.glm)
@@ -57,7 +53,6 @@ plot(sriglm)
 
 # Regression trees
 require(rpart)
-
 # Control yield predictions (Yc)
 Yc.rt <- rpart(Yc ~ ., data=ycdat)
 ycrt <- predict(mwgrid, Yc.rt)
@@ -70,7 +65,6 @@ plot(srirt)
 
 # Random forests (no tuning default)
 require(randomForest)
-
 # Control yield predictions (Yc)
 Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycdat)
 ycrf <- predict(mwgrid, Yc.rf)
@@ -81,8 +75,7 @@ SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf <- predict(mwgrid, SRI.rf)
 plot(srirf)
 
-# Regression ensemble ----------------------------------------------------
-
+# Regression ensembles ---------------------------------------------------
 # Dataframe setup
 ycpred <- stack(ycglm, ycrt, ycrf)
 names(ycpred) <- c("ycglm", "ycrt", "ycrf")
@@ -111,8 +104,7 @@ sriwgt <- predict(sripred, SRIwgt.glm, type="response")
 quantile(sriwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
 plot(sriwgt)
 
-# Write predictions --------------------------------------------------
-
+# Write predictions -------------------------------------------------------
 dir.create("Results", recursive=F)
 writeRaster(ycpred, filename="./Results/MW_ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(sripred, filename="./Results/MW_sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
