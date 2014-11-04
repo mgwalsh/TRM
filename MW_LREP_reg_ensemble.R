@@ -43,13 +43,13 @@ srdat <- na.omit(srdat)
 # Stepwise main effects GLM's
 require(MASS)
 
-## Control yield predictions (Yc)
+# Control yield predictions (Yc)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), data=ycdat)
 Yc.step <- stepAIC(Yc.glm)
 ycglm <- predict(mwgrid, Yc.step, type="response")
 plot(ycglm)
 
-## Site response index predictions (SRI)
+# Site response index predictions (SRI)
 SRI.glm <- glm(SRI ~ ., family=gaussian, data=srdat)
 SRI.step <- stepAIC(SRI.glm)
 sriglm <- predict(mwgrid, SRI.step, type="response")
@@ -58,12 +58,12 @@ plot(sriglm)
 # Regression trees
 require(rpart)
 
-## Control yield predictions (Yc)
+# Control yield predictions (Yc)
 Yc.rt <- rpart(Yc ~ ., data=ycdat)
 ycrt <- predict(mwgrid, Yc.rt)
 plot(ycrt)
 
-## Site response index predictions (SRI)
+# Site response index predictions (SRI)
 SRI.rt <- rpart(SRI ~ ., data=srdat)
 srirt <- predict(mwgrid, SRI.rt)
 plot(srirt)
@@ -71,12 +71,12 @@ plot(srirt)
 # Random forests (no tuning default)
 require(randomForest)
 
-## Control yield predictions (Yc)
+# Control yield predictions (Yc)
 Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycdat)
 ycrf <- predict(mwgrid, Yc.rf)
 plot(ycrf)
 
-## Site response index predictions (SRI)
+# Site response index predictions (SRI)
 SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf <- predict(mwgrid, SRI.rf)
 plot(srirf)
@@ -114,11 +114,11 @@ plot(sriwgt)
 # Not run: Write predictions ----------------------------------------
 
 # dir.create("Results", recursive=F)
-# writeRaster(ycpred, filename="./Results/ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-# writeRaster(sripred, filename="./Results/sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# writeRaster(ycpred, filename="./Results/MW_ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# writeRaster(sripred, filename="./Results/MW_sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 # ensemble <- stack(ycwgt, sriwgt)
 # names(ensemble) <- x("ycwgt", "sriwgt")
-# writeRaster(ensemble, filename="./Results/ensemble.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# writeRaster(ensemble, filename="./Results/MW_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 
 
