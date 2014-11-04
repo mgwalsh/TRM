@@ -1,4 +1,5 @@
-# Ensemble predictions of site-level control yields (Yc) and treatment response ratio indices (SRI)
+# Ensemble regression predictions of site-level control yields (Yc) 
+# and treatment response ratio indices (SRI)
 # Malawi LREP response trial data (courtesy of LREP & Todd Benson)
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
@@ -115,6 +116,9 @@ plot(sriwgt)
 # dir.create("Results", recursive=F)
 # writeRaster(ycpred, filename="./Results/ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 # writeRaster(sripred, filename="./Results/sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# ensemble <- stack(ycwgt, sriwgt)
+# names(ensemble) <- x("ycwgt", "sriwgt")
+# writeRaster(ensemble, filename="./Results/ensemble.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 
 
