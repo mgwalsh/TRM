@@ -25,7 +25,7 @@ unzip("MW_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
 mwgrid <- stack(glist)
 
-# Split the data into train and test sets ---------------------------------
+# Split the site data into train and test sets ----------------------------
 set.seed(1385321)
 index <- 1:nrow(mwsite)
 testn <- sample(index, trunc(length(index)/3))
@@ -104,6 +104,15 @@ plot(SRI~fitted(SRIwgt.glm), exsri)
 sriwgt <- predict(sripred, SRIwgt.glm, type="response")
 quantile(sriwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
 plot(sriwgt)
+
+# Test set validation -----------------------------------------------------
+coordinates(test) <- ~Easting+Northing
+projection(test) <- projection(mwgrid)
+ycpred <- extract(ycwgt, test)
+sripred <- extract(sriwgt, test)
+pretest <- cbind(as.data.frame(test), ycpred, sripred)
+plot(Yc~ycpred, pretest)
+plot(SRI~sripred, pretest)
 
 # Write predictions -------------------------------------------------------
 dir.create("Results", recursive=F)
