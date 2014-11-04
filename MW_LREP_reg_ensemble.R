@@ -81,7 +81,7 @@ SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf <- predict(mwgrid, SRI.rf)
 plot(srirf)
 
-# Regression ensemble -----------------------------------------------------
+# Regression ensemble ----------------------------------------------------
 
 # Dataframe setup
 ycpred <- stack(ycglm, ycrt, ycrf)
@@ -111,14 +111,11 @@ sriwgt <- predict(sripred, SRIwgt.glm, type="response")
 quantile(sriwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
 plot(sriwgt)
 
-# Not run: Write predictions ----------------------------------------
+# Write predictions --------------------------------------------------
 
-# dir.create("Results", recursive=F)
-# writeRaster(ycpred, filename="./Results/MW_ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-# writeRaster(sripred, filename="./Results/MW_sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-# ensemble <- stack(ycwgt, sriwgt)
-# names(ensemble) <- x("ycwgt", "sriwgt")
-# writeRaster(ensemble, filename="./Results/MW_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-
-
-
+dir.create("Results", recursive=F)
+writeRaster(ycpred, filename="./Results/MW_ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(sripred, filename="./Results/MW_sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+ensemble <- stack(ycwgt, sriwgt)
+names(ensemble) <- c("ycwgt", "sriwgt")
+writeRaster(ensemble, filename="./Results/MW_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
