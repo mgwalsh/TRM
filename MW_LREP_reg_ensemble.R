@@ -15,7 +15,7 @@ require(downloader)
 require(proj4)
 require(raster)
 
-# Data download -----------------------------------------------------------
+# Data downloads ----------------------------------------------------------
 download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "MW_Site_Indices.csv", mode="wb")
 mwsite <- read.table("MW_Site_Indices.csv", header=T, sep=",")
 
@@ -108,6 +108,6 @@ plot(sriwgt)
 dir.create("Results", recursive=F)
 writeRaster(ycpred, filename="./Results/MW_ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(sripred, filename="./Results/MW_sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-ensemble <- stack(ycwgt, sriwgt)
-names(ensemble) <- c("ycwgt", "sriwgt")
-writeRaster(ensemble, filename="./Results/MW_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+enspred <- stack(ycwgt, sriwgt)
+names(enspred) <- c("ycwgt", "sriwgt")
+writeRaster(enspred, filename="./Results/MW_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
