@@ -3,7 +3,7 @@
 # Malawi LREP response trial data (courtesy of LREP & Todd Benson)
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
-# M. Walsh, October 2014
+# M. Walsh, J. Chen & A. Verlinden, November 2014
 
 # Set local working directory e.g.
 dat_dir <- "~/Documents/Data/Malawi/Fert_resp_models"
@@ -44,7 +44,7 @@ srdat <- na.omit(srdat)
 require(MASS)
 
 # Control yield predictions (Yc)
-Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), data=ycdat)
+Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), ycdat)
 Yc.step <- stepAIC(Yc.glm)
 ycglm <- predict(mwgrid, Yc.step, type="response")
 plot(ycglm)
