@@ -25,12 +25,19 @@ unzip("MW_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
 mwgrid <- stack(glist)
 
-# Overlay gridded covariates & generate dataframes ------------------------
-coordinates(mwsite) <- ~Easting+Northing
-projection(mwsite) <- projection(mwgrid)
-exgrid <- extract(mwgrid, mwsite)
-Yc <- mwsite$Yc
-SRI <- mwsite$SRI
+# Split the data into train and test sets ---------------------------------
+set.seed(1385321)
+index <- 1:nrow(mwsite)
+testn <- sample(index, trunc(length(index)/3))
+test <- na.omit(mwsite[testn,-6])
+train <- na.omit(mwsite[-testn,-6])
+
+# Overlay grids & generate dataframes -------------------------------------
+coordinates(train) <- ~Easting+Northing
+projection(train) <- projection(mwgrid)
+exgrid <- extract(mwgrid, train)
+Yc <- train$Yc
+SRI <- train$SRI
 ycdat <- data.frame(cbind(Yc, exgrid))
 ycdat <- na.omit(ycdat)
 srdat <- data.frame(cbind(SRI, exgrid))
@@ -75,10 +82,10 @@ ycpred <- stack(ycglm, ycrt, ycrf)
 names(ycpred) <- c("ycglm", "ycrt", "ycrf")
 sripred <- stack(sriglm, srirt, srirf)
 names(sripred) <- c("sriglm", "srirt", "srirf")
-exyc <- extract(ycpred, mwsite)
+exyc <- extract(ycpred, train)
 exyc <- data.frame(cbind(Yc, exyc))
 exyc <- na.omit(exyc)
-exsri <- extract(sripred, mwsite)
+exsri <- extract(sripred, train)
 exsri <- data.frame(cbind(SRI, exsri))
 exsri <- na.omit(exsri)
 
