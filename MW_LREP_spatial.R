@@ -41,11 +41,13 @@ srdat <- na.omit(srdat)
 
 # Stepwise main effects GLM's
 require(MASS)
+
 ## Control yield predictions (Yc)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), data=ycdat)
 Yc.step <- stepAIC(Yc.glm)
 ycglm <- predict(mwgrid, Yc.step, type="response")
 plot(ycglm)
+
 ## Site response index predictions (SRI)
 SRI.glm <- glm(SRI ~ ., family=gaussian, data=srdat)
 SRI.step <- stepAIC(SRI.glm)
@@ -54,10 +56,12 @@ plot(sriglm)
 
 # Regression trees
 require(rpart)
+
 ## Control yield predictions (Yc)
 Yc.rt <- rpart(Yc ~ ., data=ycdat)
 ycrt <- predict(mwgrid, Yc.rt)
 plot(ycrt)
+
 ## Site response index predictions (SRI)
 SRI.rt <- rpart(SRI ~ ., data=srdat)
 srirt <- predict(mwgrid, SRI.rt)
@@ -65,30 +69,53 @@ plot(srirt)
 
 # Random forests (no tuning default)
 require(randomForest)
+
 ## Control yield predictions (Yc)
 Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycdat)
 ycrf <- predict(mwgrid, Yc.rf)
 plot(ycrf)
+
 ## Site response index predictions (SRI)
 SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf <- predict(mwgrid, SRI.rf)
 plot(srirf)
 
-# Unweighted mean prediction ensemble (glm, rt & rf models)
-## Control yield predictions (Yc)
-myc <- mean(ycglm, ycrt, ycrf)
-plot(myc)
-## Site response index predictions (SRI)
-msri <- mean(sriglm, srirt, srirf)
-plot(msri)
+# Regression ensemble -----------------------------------------------------
 
-# Not run: Write regression predictions -----------------------------------
+# Weighted means (glm, rt & rf models)
+## Dataframe setup
+ycpred <- stack(ycglm, ycrt, ycrf)
+names(ycpred) <- c("ycglm", "ycrt", "ycrf")
+sripred <- stack(sriglm, srirt, srirf)
+names(sripred) <- c("sriglm", "srirt", "srirf")
+exyc <- extract(ycpred, mwsite)
+exyc <- data.frame(cbind(Yc, exyc))
+exyc <- na.omit(exyc)
+exsri <- extract(sripred, mwsite)
+exsri <- data.frame(cbind(SRI, exsri))
+exsri <- na.omit(exsri)
+
+## Control yield predictions (Yc) 
+YCwgt.glm <- glm(Yc~log(ycglm)+log(ycrt)+log(ycrf), family=gaussian(link="log"), data=exyc)
+summary(YCwgt.glm)
+plot(Yc ~ fitted(YCwgt.glm), exyc)
+ycwgt <- predict(ycpred, YCwgt.glm, type="response")
+quantile(ycwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
+plot(ycwgt)
+
+## Site response index predictions (SRI)
+SRIwgt.glm <- glm(SRI ~ ., family=gaussian, data=exsri)
+summary(SRIwgt.glm)
+plot(SRI ~ fitted(SRIwgt.glm), exsri)
+sriwgt <- predict(sripred, SRIwgt.glm, type="response")
+quantile(sriwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
+plot(sriwgt)
+
+# Not run: Write predictions ----------------------------------------
+
 # dir.create("Results", recursive=F)
-# ycpred <- stack(ycglm, ycrt, ycrf)
-# names(ycpred) <- c("ycglm", "ycrt", "ycrf")
 # writeRaster(ycpred, filename="./Results/ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-# sripred <- stack(sriglm, srirt, srirf)
-# names(sripred) <- c("sriglm", "srirt", "srirf")
 # writeRaster(sripred, filename="./Results/sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
 
 
