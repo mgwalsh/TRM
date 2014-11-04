@@ -43,37 +43,31 @@ require(MASS)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), ycdat)
 Yc.step <- stepAIC(Yc.glm)
 ycglm <- predict(mwgrid, Yc.step, type="response")
-plot(ycglm)
 
 # Site response index predictions (SRI)
 SRI.glm <- glm(SRI ~ ., family=gaussian, data=srdat)
 SRI.step <- stepAIC(SRI.glm)
 sriglm <- predict(mwgrid, SRI.step, type="response")
-plot(sriglm)
 
 # Regression trees
 require(rpart)
 # Control yield predictions (Yc)
 Yc.rt <- rpart(Yc ~ ., data=ycdat)
 ycrt <- predict(mwgrid, Yc.rt)
-plot(ycrt)
 
 # Site response index predictions (SRI)
 SRI.rt <- rpart(SRI ~ ., data=srdat)
 srirt <- predict(mwgrid, SRI.rt)
-plot(srirt)
 
 # Random forests (no tuning default)
 require(randomForest)
 # Control yield predictions (Yc)
 Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycdat)
 ycrf <- predict(mwgrid, Yc.rf)
-plot(ycrf)
 
 # Site response index predictions (SRI)
 SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf <- predict(mwgrid, SRI.rf)
-plot(srirf)
 
 # Regression ensembles ---------------------------------------------------
 # Dataframe setup
