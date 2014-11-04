@@ -82,8 +82,7 @@ plot(srirf)
 
 # Regression ensemble -----------------------------------------------------
 
-# Weighted means (glm, rt & rf models)
-## Dataframe setup
+# Dataframe setup
 ycpred <- stack(ycglm, ycrt, ycrf)
 names(ycpred) <- c("ycglm", "ycrt", "ycrf")
 sripred <- stack(sriglm, srirt, srirf)
@@ -95,7 +94,7 @@ exsri <- extract(sripred, mwsite)
 exsri <- data.frame(cbind(SRI, exsri))
 exsri <- na.omit(exsri)
 
-## Control yield predictions (Yc) 
+# Control yield predictions (Yc) 
 YCwgt.glm <- glm(Yc~log(ycglm)+log(ycrt)+log(ycrf), family=gaussian(link="log"), data=exyc)
 summary(YCwgt.glm)
 plot(Yc ~ fitted(YCwgt.glm), exyc)
@@ -103,7 +102,7 @@ ycwgt <- predict(ycpred, YCwgt.glm, type="response")
 quantile(ycwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
 plot(ycwgt)
 
-## Site response index predictions (SRI)
+# Site response index predictions (SRI)
 SRIwgt.glm <- glm(SRI ~ ., family=gaussian, data=exsri)
 summary(SRIwgt.glm)
 plot(SRI ~ fitted(SRIwgt.glm), exsri)
