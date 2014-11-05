@@ -25,8 +25,8 @@ unzip("MW_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
 mwgrid <- stack(glist)
 
-# Split the site data into train and test sets ----------------------------
-# Hold-out ~1/4 to 1/3 of the site data
+# Randomly split the site data into train and test sets -------------------
+# Hold-out ~1/4 to 1/3 of the sites
 set.seed(1385321)
 index <- 1:nrow(mwsite)
 testn <- sample(index, trunc(length(index)/4))
