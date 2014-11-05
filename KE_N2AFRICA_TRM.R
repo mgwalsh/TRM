@@ -72,7 +72,7 @@ gpres <- extract(grids, pres)
 pb <- c(rep(1, nrow(pres)), rep(0, nrow(back)))
 presback <- data.frame(cbind(pb, rbind(gpres, gback)))
 
-# Dismo profile models (just for illustration) ----------------------------
+# Dismo profile models (just for illustration) -------------------------------
 
 # Bioclim (for comparison to Mahalanobis distance only)
 bc <- bioclim(grids, pres)
@@ -92,7 +92,7 @@ psim <- exp(-0.5*pmhp^2/(exp(-0.5*pmhp^2+exp(-0.5*pmhb^2))))
 plot(psim)
 plot(roi, add=T)
 
-# Regression models -------------------------------------------------------
+# Regression models ----------------------------------------------------------
 
 # Stepwise main effects GLM
 require(MASS)
@@ -108,7 +108,7 @@ points(pres, pch=21, col="red", bg="red")
 # Random forest (no tuning default)
 require(randomForest)
 set.seed(1235)
-pres.rf <- randomForest(pb ~ ., importance=T, proximity=T, data=presback)
+pres.rf <- randomForest(factor(pb) ~ ., importance=T, proximity=T, data=presback)
 print(pres.rf)
 prf <- predict(grids, pres.rf, ext=ext)
 plot(prf)
