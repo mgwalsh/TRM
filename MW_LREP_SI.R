@@ -3,24 +3,24 @@
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # M. Walsh, September 2014
 
-# Set local working directory e.g.
-dat_dir <- "~/Documents/Data/Malawi/Fert_resp_models"
-setwd(dat_dir)
-
 # Required packages
 # install.packages(c("downloader","proj4","arm",)), dependencies=TRUE)
 require(downloader)
 require(proj4)
 require(arm)
 
-# Response trial data ------------------------------------------------------
+# Data download -----------------------------------------------------------
+# Create a "Data" folder in your current working directory
+dir.create("Data", showWarnings=F)
+dat_dir <- "./Data"
 
-download("https://www.dropbox.com/s/243n844p9kep3e6/MW_fert_trials.zip?dl=0", "MW_fert_trials.zip", mode="wb")
-unzip("MW_fert_trials.zip")
-mtrial <- read.table("Trial.csv", header=T, sep=",")
-mwsite <- read.table("Location.csv", header=T, sep=",")
+# LREP fertilizer response data download to "./Data"
+download("https://www.dropbox.com/s/i4dby04fl9j042a/MW_fert_trials.zip?dl=0", "./Data/MW_fert_trials.zip", mode="wb")
+unzip("./Data/MW_fert_trials.zip", exdir="./Data", overwrite=T)
+mwsite <- read.table(paste(dat_dir, "/Location.csv", sep=""), header=T, sep=",")
+mtrial <- read.table(paste(dat_dir, "/Trial.csv", sep=""), header=T, sep=",")
 
-# Define "coordinate reference system" (CRS)
+# Georeference and specify site ID's --------------------------------------
 # Project to Africa LAEA from UTM36S
 mw <- cbind(mwsite$Easting, mwsite$Northing)
 tr <- ptransform(mw, '+proj=utm +zone=36 +south +datum=WGS84 +units=m +no_defs', '+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs')
@@ -42,6 +42,7 @@ mwsite.gid <- cbind(mwsite, GID)
 # Merge location w trial data
 mwresp <- merge(mwsite.gid, mtrial, by="LID")
 
+# Exploratory plots -------------------------------------------------------
 # ECDF plots of control and treatment yields
 trt1 <- subset(mwresp, NPS==1 & Urea==1, select=c(Yt,Yc)) 
 trt2 <- subset(mwresp, NPS==2 & Urea==2, select=c(Yt,Yc)) 
@@ -64,7 +65,6 @@ abline(0,0, lwd=2, col="red")
 abline(log(2),0, col="grey")
 
 # REML models -------------------------------------------------------------
-
 mlm1 <- lmer(log(Yt/Yc)~log(Yc)+NPS+Urea+(1|GID)+(1|Year/GID), data=mwresp)
 display(mlm1)
 mlm2 <- lmer(log(Yt/Yc)~log(Yc)+NPS+Urea+log(Yc)*NPS+log(Yc)*Urea+(1|GID)+(1|Year/GID), data=mwresp)
@@ -80,8 +80,7 @@ plot(log(Yt/Yc)~fitted(mlm2), xlim=c(-2,8), ylim=c(-2,8), xlab="Modeled log(Yt/Y
 abline(0,1, col="red")
 # plot(residuals(mlm2)~fitted(mlm2), xlim=c(-2,8), ylim=c(-2,2), xlab="Modeled RR", ylab="Model residuals", mwresp)
 
-# Extract control yield and response ratio indices at GID's ----------
-
+# Extract control yield and response ratio indices at GID's ---------------
 mlm2.ran <- ranef(mlm2)
 gidsrr <- as.data.frame(rownames(mlm2.ran$GID))
 colnames(gidsrr) <- c("GID")
@@ -96,5 +95,9 @@ gidsrr <- merge(gidsrr, y, by="GID")
 gidsrr <- merge(gidsrr, Yc, by="GID")
 gidsrr$SRI <- mlm2.ran$GID[,1]
 
-# Write site index file
-write.csv(gidsrr, "MW_Site_Indices.csv", row.names=F)
+# Write site index file ---------------------------------------------------
+# Create a "Results" folder in your current working directory
+dir.create("Results", showWarnings=F)
+
+# Write csv to "./Results"
+write.csv(gidsrr, "./Results/MW_Site_Indices.csv", row.names=F)
