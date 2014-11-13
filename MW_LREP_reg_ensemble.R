@@ -5,10 +5,6 @@
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
 # M. Walsh, J. Chen & A. Verlinden, November 2014
 
-# Set local working directory e.g.
-dat_dir <- "~/Documents/Data/Malawi/Fert_resp_models"
-setwd(dat_dir)
-
 # Required packages
 # install.packages(c("downloader","proj4","raster")), dependencies=TRUE)
 require(downloader)
@@ -16,20 +12,26 @@ require(proj4)
 require(raster)
 
 # Data downloads ----------------------------------------------------------
-download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "MW_Site_Indices.csv", mode="wb")
-mwsite <- read.table("MW_Site_Indices.csv", header=T, sep=",")
+# Create a "Data" folder in your current working directory
+dir.create("Data", showWarnings=F)
+dat_dir <- "./Data"
+
+# Site index data download
+download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "./Data/MW_Site_Indices.csv", mode="wb")
+mwsite <- read.table(paste(dat_dir, "/MW_Site_Indices.csv", sep=""), header=T, sep=",")
 
 # Malawi grids download (~7.5 Mb)
-download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "MW_grids.zip", mode="wb")
-unzip("MW_grids.zip", overwrite=T)
-glist <- list.files(pattern="tif", full.names=T)
+download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "./Data/MW_grids.zip", mode="wb")
+unzip("./Data/MW_grids.zip", exdir="./Data", overwrite=T)
+glist <- list.files(path="./Data", pattern="tif", full.names=T)
 mwgrid <- stack(glist)
 
-# Randomly split the site data into train and test sets -------------------
-# Hold-out ~1/4 to 1/3 of the sites
+# Randomly split the site index data into train and test sets -------------
+# Hold-out ~1/4 to 1/3 of the sites, set this with n
+n <- 4
 set.seed(1385321)
 index <- 1:nrow(mwsite)
-testn <- sample(index, trunc(length(index)/4))
+testn <- sample(index, trunc(length(index)/n))
 test <- na.omit(mwsite[testn,-6])
 train <- na.omit(mwsite[-testn,-6])
 
@@ -116,7 +118,7 @@ plot(Yc~ycpred, pretest)
 plot(SRI~sripred, pretest)
 
 # Write predictions -------------------------------------------------------
-dir.create("Results", recursive=F)
+dir.create("Results", showWarnings=F)
 writeRaster(ycpred, filename="./Results/MW_ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(sripred, filename="./Results/MW_sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 enspred <- stack(ycwgt, sriwgt)
