@@ -6,9 +6,12 @@
 # M.Walsh, J.Chen & A.Verlinden, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster")), dependencies=TRUE)
+# install.packages(c("downloader","raster","MASS","rpart","randomForest")), dependencies=TRUE)
 require(downloader)
 require(raster)
+require(MASS)
+require(rpart)
+require(randomForest)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -47,7 +50,6 @@ srdat <- na.omit(srdat)
 
 # Regression models -------------------------------------------------------
 # Stepwise main effects GLM's
-require(MASS)
 # Control yield predictions (Yc)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), ycdat)
 Yc.step <- stepAIC(Yc.glm)
@@ -59,7 +61,6 @@ SRI.step <- stepAIC(SRI.glm)
 sriglm <- predict(mwgrid, SRI.step, type="response")
 
 # Regression trees
-require(rpart)
 # Control yield predictions (Yc)
 Yc.rt <- rpart(Yc ~ ., data=ycdat)
 ycrt <- predict(mwgrid, Yc.rt)
@@ -69,7 +70,6 @@ SRI.rt <- rpart(SRI ~ ., data=srdat)
 srirt <- predict(mwgrid, SRI.rt)
 
 # Random forests (no tuning default)
-require(randomForest)
 # Control yield predictions (Yc)
 Yc.rf <- randomForest(Yc ~ ., importance=T, proximity=T, data=ycdat)
 ycrf <- predict(mwgrid, Yc.rf)
