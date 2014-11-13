@@ -1,14 +1,13 @@
 # Ensemble regression predictions of site-level control yields (Yc) 
-# and treatment response ratio indices (SRI)
+# and treatment response ratio indices (SRI) in Malawi.
 # Malawi LREP response trial data (courtesy of LREP & Todd Benson)
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
-# M. Walsh, J. Chen & A. Verlinden, November 2014
+# M.Walsh, J.Chen & A.Verlinden, November 2014
 
 # Required packages
-# install.packages(c("downloader","proj4","raster")), dependencies=TRUE)
+# install.packages(c("downloader","raster")), dependencies=TRUE)
 require(downloader)
-require(proj4)
 require(raster)
 
 # Data downloads ----------------------------------------------------------
@@ -16,11 +15,11 @@ require(raster)
 dir.create("Data", showWarnings=F)
 dat_dir <- "./Data"
 
-# Site index data download
+# Site index data download to "./Data"
 download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "./Data/MW_Site_Indices.csv", mode="wb")
 mwsite <- read.table(paste(dat_dir, "/MW_Site_Indices.csv", sep=""), header=T, sep=",")
 
-# Malawi grids download (~7.5 Mb)
+# Malawi grids download to "./Data" (~7.5 Mb)
 download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "./Data/MW_grids.zip", mode="wb")
 unzip("./Data/MW_grids.zip", exdir="./Data", overwrite=T)
 glist <- list.files(path="./Data", pattern="tif", full.names=T)
@@ -79,46 +78,48 @@ ycrf <- predict(mwgrid, Yc.rf)
 SRI.rf <- randomForest(SRI ~ ., importance=T, proximity=T, data=srdat)
 srirf <- predict(mwgrid, SRI.rf)
 
-# Regression ensembles ---------------------------------------------------
+# Test set ensemble predictions ------------------------------------------
 # Dataframe setup
+coordinates(test) <- ~Easting+Northing
+projection(test) <- projection(mwgrid)
+Yc_test <- test$Yc
+SRI_test <- test$SRI
 ycpred <- stack(ycglm, ycrt, ycrf)
 names(ycpred) <- c("ycglm", "ycrt", "ycrf")
 sripred <- stack(sriglm, srirt, srirf)
 names(sripred) <- c("sriglm", "srirt", "srirf")
-exyc <- extract(ycpred, train)
-exyc <- data.frame(cbind(Yc, exyc))
+
+# Overlay training set predictions w. test data
+exyc <- extract(ycpred, test)
+exyc <- data.frame(cbind(Yc_test, exyc))
 exyc <- na.omit(exyc)
-exsri <- extract(sripred, train)
-exsri <- data.frame(cbind(SRI, exsri))
+exsri <- extract(sripred, test)
+exsri <- data.frame(cbind(SRI_test, exsri))
 exsri <- na.omit(exsri)
 
 # Control yield predictions (Yc) 
-YCwgt.glm <- glm(Yc~log(ycglm)+log(ycrt)+log(ycrf), family=gaussian(link="log"), data=exyc)
-summary(YCwgt.glm)
-plot(Yc~fitted(YCwgt.glm), exyc)
-ycwgt <- predict(ycpred, YCwgt.glm, type="response")
+YCwgt.glm <- glm(Yc_test~log(ycglm)+log(ycrt)+log(ycrf), family=gaussian(link="log"), data=exyc)
+YCwgt.step <- stepAIC(YCwgt.glm)
+summary(YCwgt.step)
+plot(Yc_test~fitted(YCwgt.step), exyc)
+ycwgt <- predict(ycpred, YCwgt.step, type="response")
 quantile(ycwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
 plot(ycwgt)
 
 # Site response index predictions (SRI)
-SRIwgt.glm <- glm(SRI ~ ., family=gaussian, data=exsri)
-summary(SRIwgt.glm)
-plot(SRI~fitted(SRIwgt.glm), exsri)
-sriwgt <- predict(sripred, SRIwgt.glm, type="response")
+SRIwgt.glm <- glm(SRI_test ~ ., family=gaussian, data=exsri)
+SRIwgt.step <- stepAIC(SRIwgt.glm)
+summary(SRIwgt.step)
+plot(SRI_test~fitted(SRIwgt.step), exsri)
+sriwgt <- predict(sripred, SRIwgt.step, type="response")
 quantile(sriwgt, prob=c(0.025,0.25,0.5,0.75,0.975))
 plot(sriwgt)
 
-# Test set validation -----------------------------------------------------
-coordinates(test) <- ~Easting+Northing
-projection(test) <- projection(mwgrid)
-ycpred <- extract(ycwgt, test)
-sripred <- extract(sriwgt, test)
-pretest <- cbind(as.data.frame(test), ycpred, sripred)
-plot(Yc~ycpred, pretest)
-plot(SRI~sripred, pretest)
-
-# Write predictions -------------------------------------------------------
+# Write spatial predictions -----------------------------------------------
+# Create a "Results" folder in your current working directory
 dir.create("Results", showWarnings=F)
+
+# Export Gtif's to "./Results"
 writeRaster(ycpred, filename="./Results/MW_ycpred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(sripred, filename="./Results/MW_sripred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 enspred <- stack(ycwgt, sriwgt)
