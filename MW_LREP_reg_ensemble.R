@@ -22,7 +22,7 @@ dat_dir <- "./Data"
 download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "./Data/MW_Site_Indices.csv", mode="wb")
 mwsite <- read.table(paste(dat_dir, "/MW_Site_Indices.csv", sep=""), header=T, sep=",")
 
-# Malawi grids download to "./Data" (~7.5 Mb)
+# Malawi grids download to "./Data" (~7.6 Mb)
 download("https://www.dropbox.com/s/54di5f37yp30bz4/MW_grids.zip?dl=0", "./Data/MW_grids.zip", mode="wb")
 unzip("./Data/MW_grids.zip", exdir="./Data", overwrite=T)
 glist <- list.files(path="./Data", pattern="tif", full.names=T)
@@ -53,11 +53,13 @@ srdat <- na.omit(srdat)
 # Control yield predictions (Yc)
 Yc.glm <- glm(Yc ~ ., family=gaussian(link="log"), ycdat)
 Yc.step <- stepAIC(Yc.glm)
+summary(Yc.step)
 ycglm <- predict(mwgrid, Yc.step, type="response")
 
 # Site response index predictions (SRI)
 SRI.glm <- glm(SRI ~ ., family=gaussian, data=srdat)
 SRI.step <- stepAIC(SRI.glm)
+summary(SRI.step)
 sriglm <- predict(mwgrid, SRI.step, type="response")
 
 # Regression trees
