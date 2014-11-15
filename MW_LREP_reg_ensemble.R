@@ -9,6 +9,7 @@
 # install.packages(c("downloader","raster","MASS","rpart","randomForest")), dependencies=TRUE)
 require(downloader)
 require(raster)
+require(rgdal)
 require(MASS)
 require(rpart)
 require(randomForest)
