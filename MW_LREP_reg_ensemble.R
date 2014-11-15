@@ -6,7 +6,7 @@
 # M.Walsh, J.Chen & A.Verlinden, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","MASS","rpart","randomForest")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","MASS","rpart","randomForest")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
