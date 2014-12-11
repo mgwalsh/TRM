@@ -4,7 +4,7 @@
 # M. Walsh, September 2014
 
 # Required packages
-# install.packages(c("downloader","proj4","arm",)), dependencies=TRUE)
+# install.packages(c("downloader","proj4","arm")), dependencies=TRUE)
 require(downloader)
 require(proj4)
 require(arm)
