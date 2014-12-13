@@ -75,6 +75,12 @@ anova(mlm1, mlm2)
 # mlm3 <- glmer(I(log(Yt/Yc)>log(2))~log(Yc)+NPS+Urea+log(Yc)*NPS+log(Yc)*Urea+(1|GID)+(1|Year/GID), family=binomial(link="logit"), data=mwresp)
 # display(mlm3)
 
+# Not run: Treatment yield model
+# mlm4 <- lmer(log(Yt)~log(Yc)+NPS+Urea+log(Yc)*NPS+log(Yc)*Urea+(1|GID)+(1|Year/GID), data=mwresp)
+# summary(mlm4)
+# plot(log(Yt)~fitted(mlm4), xlim=c(4,10), ylim=c(4,10), xlab="Modeled log(Yt)", ylab="Observed log(Yt)", mwresp)
+# abline(0,1, col="red")
+
 # Diagnostic plots of mlm2 model fit & residuals
 plot(log(Yt/Yc)~fitted(mlm2), xlim=c(-2,8), ylim=c(-2,8), xlab="Modeled log(Yt/Yc)", ylab="Observed log(Yt/Yc)", mwresp)
 abline(0,1, col="red")
