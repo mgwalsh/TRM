@@ -60,7 +60,7 @@ plot(ecdf(log(trt2$Yt/trt2$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.p
 plot(ecdf(log(trt3$Yt/trt3$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.points=F)
 
 # Response ratio plot
-plot(log(Yt/Yc)~log(Yc), ylab="Treatment response ratio = log(Yijk/Y0jk)", xlab="Unfertilized control yield = log(Y0jk)", mwresp)
+plot(log(Yt/Yc)~log(Yc), ylab="Treatment response ratio = log(Yt/Yc)", xlab="Unfertilized control yield = log(Yc)", mwresp)
 abline(0,0, lwd=2, col="red")
 abline(log(2),0, col="grey")
 
