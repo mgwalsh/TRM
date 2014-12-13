@@ -87,7 +87,7 @@ display(mlm4)
 plot(log(Yt)~fitted(mlm4), xlim=c(4,10), ylim=c(4,10), xlab="Modeled log(Yt)", ylab="Observed log(Yt)", mwresp)
 abline(0,1, col="red")
 
-# Extract control yield and response ratio indices at GID's ---------------
+# Extract control yield and site response ratio indices at GID's ----------
 mlm2.ran <- ranef(mlm2)
 gidsrr <- as.data.frame(rownames(mlm2.ran$GID))
 colnames(gidsrr) <- c("GID")
