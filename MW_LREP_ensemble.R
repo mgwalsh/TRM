@@ -72,12 +72,71 @@ step <- trainControl(method = "cv", number = 5)
 Yc.glm <- train(log(Yc) ~ ., data = ycTrain,
                 method = "glmStepAIC",
                 trControl = step)
-summary(Yc.glm)
 ycglm.pred <- predict(mwgrid, Yc.glm) ## spatial predictions
 
 # Average site response indices (SRI, dimensionless)
 SRI.glm <- train(SRI ~ ., data = siTrain,
                  method = "glmStepAIC",
                  trControl = step)
-summary(SRI.glm)
 siglm.pred <- predict(mwgrid, SRI.glm) ## spatial predictions
+
+# Random forests <randomForest> -------------------------------------------
+# out-of-bag predictions
+oob <- trainControl(method = "oob")
+
+# Average control yields (Yc, kg/ha)
+Yc.rf <- train(log(Yc) ~ ., data = ycTrain,
+               method = "rf",
+               trControl = oob)
+ycrf.pred <- predict(mwgrid, Yc.rf) ## spatial predictions
+
+# Average site response indices (SRI, dimensionless)
+SRI.rf <- train(SRI ~ ., data = siTrain,
+                method = "rf",
+                trControl = oob)
+sirf.pred <- predict(mwgrid, SRI.rf) ## spatial predictions
+
+# Gradient boosting <gbm> -------------------------------------------------
+# CV for training gbm's
+gbm <- trainControl(method = "repeatedcv", number = 5, repeats = 5)
+
+# Average control yields (Yc, kg/ha)
+Yc.gbm <- train(log(Yc) ~ ., data = ycTrain,
+                method = "gbm",
+                trControl = gbm)
+ycgbm.pred <- predict(mwgrid, Yc.gbm) ## spatial predictions
+
+# Average site response indices (SRI, dimensionless)
+SRI.gbm <- train(SRI ~ ., data = siTrain,
+                 method = "gbm",
+                 trControl = gbm)
+sigbm.pred <- predict(mwgrid, SRI.gbm) ## spatial predictions
+
+# Neural nets <nnet> ------------------------------------------------------
+# CV for training nnet's
+nn <- trainControl(method = "cv", number = 10)
+
+# Average control yields (Yc, kg/ha)
+Yc.nn <- train(log(Yc) ~ ., data = ycTrain,
+               method = "nnet",
+               trControl = nn)
+ycnn.pred <- predict(mwgrid, Yc.nn) ## spatial predictions
+
+# Average site response indices (SRI, dimensionless)
+SRI.nn <- train(SRI ~ ., data = siTrain,
+                method = "nnet",
+                trControl = nn)
+sinn.pred <- predict(mwgrid, SRI.nn) ## spatial predictions
+
+# Plot predictions --------------------------------------------------------
+# Control yield (Yc) prediction plots
+yc.preds <- stack(ycglm.pred, ycrf.pred, ycgbm.pred, ycnn.pred)
+names(yc.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
+plot(yc.preds, axes = F)
+
+# Average site response indices (SRI, dimensionless)
+si.preds <- stack(siglm.pred, sirf.pred, sigbm.pred, sinn.pred)
+names(si.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
+plot(si.preds, axes = F)
+
+
