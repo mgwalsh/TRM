@@ -169,7 +169,7 @@ YC.ens <- train(log(Yc) ~ YCglm + YCrf + YCgbm + YCnn, data = ycensTest,
                 trControl = ens)
 yc.pred <- predict(YC.ens, ycensTest, type="raw")
 yc.test <- cbind(ycensTest, yc.pred)
-ycens.pred <- predict(pred, YC.ens, type="raw") ## spatial prediction
+ycens.pred <- predict(pred, YC.ens, type="raw") ## spatial predictions
 plot(exp(ycens.pred), axes = F)
 
 # Site response indices (SRI, dimensionless)
@@ -178,7 +178,7 @@ SRI.ens <- train(SRI ~ SIglm + SIrf + SIgbm + SInn, data = siensTest,
                  trControl = ens)
 si.pred <- predict(SRI.ens, siensTest, type="raw")
 si.test <- cbind(siensTest, si.pred)
-siens.pred <- predict(pred, SRI.ens, type="raw") ## spatial prediction
+siens.pred <- predict(pred, SRI.ens, type="raw") ## spatial predictions
 plot(siens.pred, axes = F)
 
 # Write spatial predictions -----------------------------------------------
