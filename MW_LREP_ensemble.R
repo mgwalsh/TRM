@@ -74,7 +74,7 @@ Yc.glm <- train(log(Yc) ~ ., data = ycTrain,
                 trControl = step)
 ycglm.pred <- predict(mwgrid, Yc.glm) ## spatial predictions
 
-# Average site response indices (SRI, dimensionless)
+# Site response indices (SRI, dimensionless)
 SRI.glm <- train(SRI ~ ., data = siTrain,
                  method = "glmStepAIC",
                  trControl = step)
@@ -90,7 +90,7 @@ Yc.rf <- train(log(Yc) ~ ., data = ycTrain,
                trControl = oob)
 ycrf.pred <- predict(mwgrid, Yc.rf) ## spatial predictions
 
-# Average site response indices (SRI, dimensionless)
+# Site response indices (SRI, dimensionless)
 SRI.rf <- train(SRI ~ ., data = siTrain,
                 method = "rf",
                 trControl = oob)
@@ -106,7 +106,7 @@ Yc.gbm <- train(log(Yc) ~ ., data = ycTrain,
                 trControl = gbm)
 ycgbm.pred <- predict(mwgrid, Yc.gbm) ## spatial predictions
 
-# Average site response indices (SRI, dimensionless)
+# Site response indices (SRI, dimensionless)
 SRI.gbm <- train(SRI ~ ., data = siTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -123,7 +123,7 @@ Yc.nn <- train(log(Yc) ~ ., data = ycTrain,
                trControl = nn)
 ycnn.pred <- predict(mwgrid, Yc.nn) ## spatial predictions
 
-# Average site response indices (SRI, dimensionless)
+# Site response indices (SRI, dimensionless)
 SRI.nn <- train(SRI ~ ., data = siTrain,
                 method = "nnet",
                 linout = T,
@@ -154,7 +154,7 @@ ycens <- cbind.data.frame(Yc, mwpred)
 ycens <- na.omit(ycens)
 ycensTest <- ycens[-ycIndex,] ## replicate previous test set
 
-# Average site response indices (SRI, dimensionless)
+# Site response indices (SRI, dimensionless)
 siens <- cbind.data.frame(SRI, mwpred)
 siens <- na.omit(siens)
 siensTest <- siens[-siIndex,] ## replicate previous test set
@@ -180,3 +180,15 @@ si.pred <- predict(SRI.ens, siensTest, type="raw")
 si.test <- cbind(siensTest, si.pred)
 siens.pred <- predict(pred, SRI.ens, type="raw") ## spatial prediction
 plot(siens.pred, axes = F)
+
+# Write spatial predictions -----------------------------------------------
+# Create a "LREP_Results" folder in current working directory
+dir.create("LREP_results", showWarnings=F)
+
+# Export Gtif's to "./LREP_results"
+writeRaster(yc.preds, filename="./LREP_results/LREP_ycpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(si.preds, filename="./LREP_results/LREP_sipreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# Ensemble predictions
+enspred <- stack(ycens.pred, siens.pred)
+writeRaster(enspred, filename="./LREP_results/LREP_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
