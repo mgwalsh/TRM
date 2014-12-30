@@ -3,7 +3,7 @@
 # Malawi LREP response trial data (courtesy of LREP & Todd Benson)
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
-# J.Chen & M.Walsh, December 2014
+# M.Walsh & J.Chen, December 2014
 
 # Required packages
 # install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","elasticnet")), dependencies=TRUE)
@@ -119,12 +119,14 @@ nn <- trainControl(method = "cv", number = 10)
 # Average control yields (Yc, kg/ha)
 Yc.nn <- train(log(Yc) ~ ., data = ycTrain,
                method = "nnet",
+               linout = T,
                trControl = nn)
 ycnn.pred <- predict(mwgrid, Yc.nn) ## spatial predictions
 
 # Average site response indices (SRI, dimensionless)
 SRI.nn <- train(SRI ~ ., data = siTrain,
                 method = "nnet",
+                linout = T,
                 trControl = nn)
 sinn.pred <- predict(mwgrid, SRI.nn) ## spatial predictions
 
@@ -134,9 +136,47 @@ yc.preds <- stack(ycglm.pred, ycrf.pred, ycgbm.pred, ycnn.pred)
 names(yc.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(yc.preds, axes = F)
 
-# Average site response indices (SRI, dimensionless)
+# Site response index plots (SRI, dimensionless)
 si.preds <- stack(siglm.pred, sirf.pred, sigbm.pred, sinn.pred)
 names(si.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(si.preds, axes = F)
 
+# Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
+# Ensemble set-up
+pred <- stack(ycglm.pred, ycrf.pred, ycgbm.pred, ycnn.pred,
+              siglm.pred, sirf.pred, sigbm.pred, sinn.pred)
+names(pred) <- c("YCglm","YCrf","YCgbm","YCnn",
+                 "SIglm","SIrf","SIgbm","SInn")
+mwpred <- extract(pred, mwsite)
 
+# Average control yields (Yc, kg/ha)
+ycens <- cbind.data.frame(Yc, mwpred)
+ycens <- na.omit(ycens)
+ycensTest <- ycens[-ycIndex,] ## replicate previous test set
+
+# Average site response indices (SRI, dimensionless)
+siens <- cbind.data.frame(SRI, mwpred)
+siens <- na.omit(siens)
+siensTest <- siens[-siIndex,] ## replicate previous test set
+
+# Ridge regression ensemble weighting on the test set
+# 10-fold CV
+ens <- trainControl(method = "cv", number = 10)
+
+# Average control yields (Yc, kg/ha)
+YC.ens <- train(log(Yc) ~ YCglm + YCrf + YCgbm + YCnn, data = ycensTest,
+                method = "ridge",
+                trControl = ens)
+yc.pred <- predict(YC.ens, ycensTest, type="raw")
+yc.test <- cbind(ycensTest, yc.pred)
+ycens.pred <- predict(pred, YC.ens, type="raw") ## spatial prediction
+plot(exp(ycens.pred), axes = F)
+
+# Site response indices (SRI, dimensionless)
+SRI.ens <- train(SRI ~ SIglm + SIrf + SIgbm + SInn, data = siensTest,
+                 method = "ridge",
+                 trControl = ens)
+si.pred <- predict(SRI.ens, siensTest, type="raw")
+si.test <- cbind(siensTest, si.pred)
+siens.pred <- predict(pred, SRI.ens, type="raw") ## spatial prediction
+plot(siens.pred, axes = F)
