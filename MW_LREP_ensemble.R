@@ -185,7 +185,7 @@ plot(siens.pred, axes = F)
 # Create a "LREP_Results" folder in current working directory
 dir.create("LREP_Results", showWarnings=F)
 
-# Export Gtif's to "./LREP_results"
+# Export Gtif's to "./LREP_Results"
 writeRaster(yc.preds, filename="./LREP_Results/LREP_ycpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(si.preds, filename="./LREP_Results/LREP_sipreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 # Ensemble predictions
