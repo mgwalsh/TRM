@@ -50,7 +50,7 @@ sidat <- cbind.data.frame(SRI, sitegrid)
 sidat <- na.omit(sidat)
 
 # set train/test set randomization seed
-seed <- 1385321
+seed <- 138
 set.seed(seed)
 
 # Split data into train and test sets ------------------------------------
