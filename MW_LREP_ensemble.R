@@ -189,6 +189,5 @@ dir.create("LREP_Results", showWarnings=F)
 writeRaster(yc.preds, filename="./LREP_Results/LREP_ycpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(si.preds, filename="./LREP_Results/LREP_sipreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 # Ensemble predictions
-enspred <- stack(ycens.pred, siens.pred)
+enspred <- stack(exp(ycens.pred), siens.pred)
 writeRaster(enspred, filename="./LREP_Results/LREP_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-
