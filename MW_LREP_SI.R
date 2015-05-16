@@ -1,7 +1,7 @@
-# Site-level Maize yield responses to fertilizer applications
-# Malawi LREP response trial data (courtesy of LREP)
-# LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
-# M. Walsh, September 2014
+#+ Site-level Maize yield responses to fertilizer applications
+#+ Malawi LREP response trial data (courtesy of LREP)
+#+ LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
+#+ M. Walsh, September 2014
 
 # Required packages
 # install.packages(c("downloader","proj4","arm")), dependencies=TRUE)
