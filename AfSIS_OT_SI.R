@@ -3,10 +3,11 @@
 #+ M. Walsh, May 2015
 
 #+ Required packages
-# install.packages(c("downloader","caret","fastICA")), dependencies=TRUE)
+# install.packages(c("downloader","caret","fastICA","glmnet")), dependencies=TRUE)
 require(downloader)
 require(caret)
 require(fastICA)
+require(glmnet)
 
 #+ Data download ---------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -36,3 +37,29 @@ afotd <- merge(field, avesp, by="FieldID")
 
 #+ Write data file --------------------------------------------------------
 write.csv(afotd, "./OT_data/OT_data.csv", row.names=F)
+
+#+ Regularized regression models ------------------------------------------
+set.seed(1235813)
+
+tc <- trainControl(
+  method = "repeatedCV",
+  number = 10,
+  repeats = 5,
+  returnResamp = "all"
+ )
+
+# Control yields (Yc)
+Yc.spca <- train(log(Yc) ~ PCA1 + PCA2 + PCA3, data = afotd,
+                family = "gaussian", 
+                method = "glmnet",
+                tuneGrid = expand.grid(.alpha=seq(0.1,1, by=0.1),.lambda=seq(0,0.3,by=0.01)),
+                trControl = tc)
+
+Yc.wetc <- train(log(Yc) ~ pH + Sand + N + P + K, data = afotd,
+                standardize = TRUE,
+                family = "gaussian", 
+                method = "glmnet",
+                tuneGrid = expand.grid(.alpha=seq(0.1,1, by=0.1),.lambda=seq(0,0.3,by=0.01)),
+                trControl = tc)
+
+
