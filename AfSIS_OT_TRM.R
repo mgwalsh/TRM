@@ -1,5 +1,5 @@
-#+ Example site index & treatment response models from AfSIS omission trial data
-#+ AfSIS ommission trial sample data, courtesy of CIAT
+#+ Example site index & treatment response models from AfSIS omission trial data.
+#+ AfSIS ommission trial sample data, courtesy of Job Kihara (CIAT).
 #+ M. Walsh, May 2015
 
 #+ Required packages
