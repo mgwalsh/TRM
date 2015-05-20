@@ -1,6 +1,6 @@
-#+ Example site index & treatment response models from AfSIS omission trial data.
-#+ AfSIS ommission trial sample data, courtesy of Job Kihara (CIAT).
-#+ M. Walsh, May 2015
+#' Example site index & treatment response models from AfSIS omission trial data.
+#' AfSIS ommission trial sample data, courtesy of Job Kihara (CIAT).
+#' M. Walsh, May 2015
 
 #+ Required packages
 # install.packages(c("downloader","caret","fastICA","glmnet")), dependencies=TRUE)
