@@ -49,12 +49,14 @@ tc <- trainControl(
  )
 
 # Control yields (Yc)
+# Yc with spectral covariates
 Yc.spca <- train(log(Yc) ~ PCA1 + PCA2 + PCA3, data = afotd,
                 family = "gaussian", 
                 method = "glmnet",
                 tuneGrid = expand.grid(.alpha=seq(0.1,0.5, by=0.1),.lambda=seq(0,0.3,by=0.01)),
                 trControl = tc)
 
+# Yc with wet chemistry covariates
 Yc.wetc <- train(log(Yc) ~ pH + Sand + N + P + K, data = afotd,
                 standardize = TRUE,
                 family = "gaussian", 
@@ -62,4 +64,19 @@ Yc.wetc <- train(log(Yc) ~ pH + Sand + N + P + K, data = afotd,
                 tuneGrid = expand.grid(.alpha=seq(0.1,0.5, by=0.1),.lambda=seq(0,0.3,by=0.01)),
                 trControl = tc)
 
+# Treatment response ratios (TRR)
+# TRR with spectral covariates
+TRR.spca <- train(TRR ~ PCA1 + PCA2 + PCA3, data = afotd,
+                  family = "gaussian", 
+                  method = "glmnet",
+                  tuneGrid = expand.grid(.alpha=seq(0.5,1, by=0.1),.lambda=seq(0,0.3,by=0.01)),
+                  trControl = tc)
+
+# TRR with wet chemistry covariates
+TRR.wetc <- train(TRR ~ pH + Sand + N + P + K, data = afotd,
+                  standardize = TRUE,
+                  family = "gaussian", 
+                  method = "glmnet",
+                  tuneGrid = expand.grid(.alpha=seq(0.1,1, by=0.1),.lambda=seq(0,0.3,by=0.01)),
+                  trControl = tc)
 
