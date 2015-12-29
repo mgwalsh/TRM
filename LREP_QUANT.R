@@ -36,10 +36,10 @@ plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 attach(mresp)
 Y <- cbind(Yt)
 X <- cbind(Yc,Year,NPS,Urea)
-Resp.rq <- rq(Y~X, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
+mresp.rq <- rq(Y~X, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
 detach(mresp)
 
 # Results plots
-summary <- summary(Resp.rq)
+summary <- summary(mresp.rq)
 plot(summary)
 
