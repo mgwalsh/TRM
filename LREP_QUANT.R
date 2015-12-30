@@ -40,4 +40,4 @@ detach(mresp)
 
 # Result plots
 summary <- summary(mresp.rq)
-plot(summary, main = c("Intercept","Control yield","NPS","Urea"))
+plot(summary, main = c("Intercept","Unfertilized yield","NPS","Urea"))
