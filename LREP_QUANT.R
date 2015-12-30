@@ -23,6 +23,17 @@ mresp <- mresp[order(mresp$Yt),] ## order dataframe based on treated yield (Yt)
 mresp$Year <- mresp$Year-1996
 
 # Exploratory plots -------------------------------------------------------
+# Treatment/Control plot
+plot(Yt ~ Yc, data = mresp, cex= .5, col = "grey", 
+     xlim = c(-200, 8200), ylim = c(-200, 8200),
+     xlab = "Unfertilized yield (kg/ha)", ylab = "Fertilized yield (kg/ha)")
+abline(c(0,1), col = "red")
+tau <- c(.025,.5,.975)
+for(i in 1:length(tau)) {
+  abline(rq(Yt~Yc, tau=tau[i], data = mresp), col = "blue", lty = 2)
+}
+
+# ECDF plot
 trt1 <- subset(mresp, NPS==1 & Urea==1, select=c(Yt,Yc)) 
 trt2 <- subset(mresp, NPS==2 & Urea==2, select=c(Yt,Yc)) 
 trt3 <- subset(mresp, NPS==2 & Urea==3, select=c(Yt,Yc))
@@ -34,10 +45,8 @@ plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 
 # Quantile regression -----------------------------------------------------
 attach(mresp)
-X <- cbind(Yc,NPS,Urea)
-mresp.rq <- rq(Yt~X, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
+Yt.rq <- rq(Yt~Yc+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
 detach(mresp)
 
 # Result plots
-summary <- summary(mresp.rq)
-plot(summary, main = c("Intercept","Unfertilized yield","NPS","Urea"))
+plot(summary(Yt.rq), main = c("Intercept","Unfertilized yield","NPS","Urea"))
