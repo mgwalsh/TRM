@@ -34,10 +34,10 @@ plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 
 # Quantile regression -----------------------------------------------------
 attach(mresp)
-X <- cbind(Yc,Year,NPS,Urea)
+X <- cbind(Yc,NPS,Urea)
 mresp.rq <- rq(Yt~X, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
 detach(mresp)
 
 # Result plots
 summary <- summary(mresp.rq)
-plot(summary, main = c("Intercept","Yc","Year","NPS","Urea"))
+plot(summary, main = c("Intercept","Control yield","NPS","Urea"))
