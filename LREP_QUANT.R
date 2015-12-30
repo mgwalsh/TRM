@@ -24,14 +24,14 @@ mresp$Year <- mresp$Year-1996
 
 # Exploratory plots -------------------------------------------------------
 # Treatment/Control plot
-plot(Yt ~ Yc, data = mresp, cex= .5, col = "grey", 
+plot(Yt ~ Yc, data = mresp, cex= .7, col = "grey", 
      xlim = c(-200, 8200), ylim = c(-200, 8200),
      xlab = "Unfertilized yield (kg/ha)", ylab = "Fertilized yield (kg/ha)")
-abline(c(0,1), col = "red")
-tau <- c(.025,.5,.975)
+abline(c(0,1), col = "red", lwd = 2)
+abline(rq(Yt~Yc, tau=0.5, data=mresp), col="blue", lwd = 2)
+tau <- c(.025,.25,.75,.975)
 for(i in 1:length(tau)) {
-  abline(rq(Yt~Yc, tau=tau[i], data = mresp), col = "blue", lty = 2)
-}
+    abline(rq(Yt~Yc, tau=tau[i], data = mresp), col = "black", lty = 2, lwd = 1) }
 
 # ECDF plot
 trt1 <- subset(mresp, NPS==1 & Urea==1, select=c(Yt,Yc)) 
