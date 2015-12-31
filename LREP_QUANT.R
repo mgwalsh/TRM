@@ -44,12 +44,8 @@ plot(ecdf(trt2$Yt), add=T, verticals=T, lty=1, lwd=1, col="blue", do.points=F)
 plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="blue", do.points=F)
 
 # Quantile regression -----------------------------------------------------
-attach(mresp)
 Yt.rq <- rq(Yt~Yc+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
-detach(mresp)
-
-# Result plots
-plot(summary(Yt.rq), main = c("Intercept","Unfertilized yield","NPS","Urea"))
+plot(summary(Yt.rq), main = c("Intercept","Unfertilized yield","NPS","Urea")) ## Result plots
 
 # Identify trials in the lowest conditional quartile ----------------------
 Q25.rq <- rq(Yt~Yc+NPS+Urea, tau = 0.25, data = mresp)
