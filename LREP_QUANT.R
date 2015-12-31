@@ -51,7 +51,6 @@ detach(mresp)
 # Result plots
 plot(summary(Yt.rq), main = c("Intercept","Unfertilized yield","NPS","Urea"))
 
-
 # Identify trials in the lowest conditional quartile ----------------------
 Q25.rq <- rq(Yt~Yc+NPS+Urea, tau = 0.25, data = mresp)
 mresp$Q25 <- ifelse(predict(Q25.rq, mresp) > mresp$Yt, 1, 0)
