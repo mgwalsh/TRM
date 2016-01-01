@@ -45,14 +45,23 @@ plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="blue", do.points=F)
 
 # Quantile regression -----------------------------------------------------
 # Linear model
-Yt.rq <- rq(Yt~Yc+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
-plot(summary(Yt.rq), main = c("Intercept","Unfertilized yield","NPS","Urea")) ## Coefficient plots
+LQ.rq <- rq(Yt~Yc+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
+plot(summary(LQ.rq), main = c("Intercept","Unfertilized yield","NPS","Urea")) ## Coefficient plots
 
 # Allometric model
-RR.rq <- rq(log(Yt)~log(Yc)+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
-plot(summary(RR.rq), main = c("Intercept","Unfertilized yield","NPS","Urea")) ## Coefficient plots
+AQ.rq <- rq(log(Yt)~log(Yc)+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
+plot(summary(AQ.rq), main = c("Intercept","Unfertilized yield","NPS","Urea")) ## Coefficient plots
 
 # Identify trials in the lowest conditional quartile ----------------------
-Q25.rq <- rq(Yt~Yc+NPS+Urea, tau = 0.25, data = mresp)
-mresp$Q25 <- ifelse(predict(Q25.rq, mresp) > mresp$Yt, 1, 0)
-prop.table(table(mresp$Q25))
+# Linear model
+LQ25.rq <- rq(Yt~Yc+NPS+Urea, tau = 0.25, data = mresp)
+mresp$LQ25 <- ifelse(predict(LQ25.rq, mresp) > mresp$Yt, 1, 0)
+prop.table(table(mresp$LQ25))
+
+# Allometric model
+AQ25.rq <- rq(log(Yt)~log(Yc)+NPS+Urea, tau = 0.25, data = mresp)
+mresp$AQ25 <- ifelse(exp(predict(AQ25.rq, mresp)) > mresp$Yt, 1, 0)
+prop.table(table(mresp$AQ25))
+
+# Cross-tabulate results
+prop.table(table(mresp$LQ25, mresp$AQ25))
