@@ -29,7 +29,7 @@ plot(Yt ~ Yc, data = mresp, cex= .7, col = "grey",
      xlab = "Unfertilized yield (kg/ha)", ylab = "Fertilized yield (kg/ha)")
 abline(c(0,1), col = "red", lwd = 2) ## 1:1 line
 abline(rq(Yt~Yc, tau=0.5, data=mresp), col="blue", lwd = 2) ## median line
-tau <- c(.025,.25,.75,.975)
+tau <- c(.05,.25,.75,.95)
 for(i in 1:length(tau)) {
     abline(rq(Yt~Yc, tau=tau[i], data = mresp), col = "blue", lty = 2, lwd = 1) }
 
@@ -64,4 +64,4 @@ mresp$AQ25 <- ifelse(exp(predict(AQ25.rq, mresp)) > mresp$Yt, 1, 0)
 prop.table(table(mresp$AQ25))
 
 # Cross-tabulate results
-prop.table(table(mresp$LQ25, mresp$AQ25))
+table(mresp$LQ25, mresp$AQ25)
