@@ -23,16 +23,6 @@ mresp <- mresp[order(mresp$Yt),] ## order dataframe based on treated yield (Yt)
 mresp$Year <- mresp$Year-1996
 
 # Exploratory plots -------------------------------------------------------
-# Treatment/Control plot
-plot(Yt ~ Yc, data = mresp, cex= .7, col = "grey", 
-     xlim = c(-200, 8200), ylim = c(-200, 8200),
-     xlab = "Unfertilized yield (kg/ha)", ylab = "Fertilized yield (kg/ha)")
-abline(c(0,1), col = "red", lwd = 2) ## 1:1 line
-abline(rq(Yt~Yc, tau=0.5, data=mresp), col="blue", lwd = 2) ## median line
-tau <- c(.05,.25,.75,.95)
-for(i in 1:length(tau)) {
-    abline(rq(Yt~Yc, tau=tau[i], data = mresp), col = "blue", lty = 2, lwd = 1) }
-
 # ECDF plot
 trt1 <- subset(mresp, NPS==1 & Urea==1, select=c(Yt,Yc)) 
 trt2 <- subset(mresp, NPS==2 & Urea==2, select=c(Yt,Yc)) 
@@ -43,25 +33,24 @@ plot(ecdf(trt1$Yt), add=T, verticals=T, lty=1, lwd=1, col="blue", do.points=F)
 plot(ecdf(trt2$Yt), add=T, verticals=T, lty=1, lwd=1, col="blue", do.points=F)
 plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="blue", do.points=F)
 
-# Quantile regression -----------------------------------------------------
-# Linear model
-LQ.rq <- rq(Yt~Yc+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
-plot(summary(LQ.rq), main = c("Intercept","Unfertilized yield","NPS","Urea")) ## Coefficient plots
+# Treatment/Control quantile plot
+plot(Yt ~ Yc, data = mresp, cex= 0.7, col = "grey", 
+     xlim = c(-200, 8200), ylim = c(-200, 8200),
+     xlab = "Unfertilized maize yield (kg/ha)", ylab = "Fertilized maize yield (kg/ha)")
+abline(c(0,1), col = "red", lwd = 2) ## 1:1 line
+AQ <- rq(log(Yt)~log(Yc), tau=c(0.05,0.25,0.5,0.75,0.95), data=mresp)
+curve(exp(AQ$coefficients[1])*x^AQ$coefficients[2], add=T, from=0, to=8000, col="blue", lty=1)
+curve(exp(AQ$coefficients[3])*x^AQ$coefficients[4], add=T, from=0, to=8000, col="blue", lty=2)
+curve(exp(AQ$coefficients[5])*x^AQ$coefficients[6], add=T, from=0, to=8000, col="blue", lwd=2)
+curve(exp(AQ$coefficients[7])*x^AQ$coefficients[8], add=T, from=0, to=8000, col="blue", lty=2)
+curve(exp(AQ$coefficients[9])*x^AQ$coefficients[10], add=T, from=0, to=8000, col="blue", lwd=1)
 
-# Allometric model
+# Quantile regression -----------------------------------------------------
 AQ.rq <- rq(log(Yt)~log(Yc)+NPS+Urea, tau = seq(0.05, 0.95, by = 0.05), data = mresp)
 plot(summary(AQ.rq), main = c("Intercept","Unfertilized yield","NPS","Urea")) ## Coefficient plots
 
 # Identify trials in the lowest conditional quartile ----------------------
 # Linear model
-LQ25.rq <- rq(Yt~Yc+NPS+Urea, tau = 0.25, data = mresp)
-mresp$LQ25 <- ifelse(predict(LQ25.rq, mresp) > mresp$Yt, 1, 0)
-prop.table(table(mresp$LQ25))
-
-# Allometric model
-AQ25.rq <- rq(log(Yt)~log(Yc)+NPS+Urea, tau = 0.25, data = mresp)
-mresp$AQ25 <- ifelse(exp(predict(AQ25.rq, mresp)) > mresp$Yt, 1, 0)
-prop.table(table(mresp$AQ25))
-
-# Cross-tabulate results
-table(mresp$LQ25, mresp$AQ25)
+Q25.rq <- rq(log(Yt)~log(Yc)+NPS+Urea, tau = 0.25, data = mresp)
+mresp$Q25 <- ifelse(exp(predict(Q25.rq, mresp)) > mresp$Yt, 1, 0)
+prop.table(table(mresp$Q25))
