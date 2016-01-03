@@ -39,7 +39,7 @@ plot(Yt ~ Yc, data = mresp, cex= 0.7, col = "grey",
      xlab = "Unfertilized maize yield (kg/ha)", ylab = "Fertilized maize yield (kg/ha)")
 abline(c(0,1), col = "red", lwd = 2) ## 1:1 line
 AQ <- rq(log(Yt)~log(Yc), tau=c(0.05,0.25,0.5,0.75,0.95), data=mresp)
-curve(exp(AQ$coefficients[1])*x^AQ$coefficients[2], add=T, from=0, to=8000, col="blue", lty=1)
+curve(exp(AQ$coefficients[1])*x^AQ$coefficients[2], add=T, from=0, to=8000, col="blue", lwd=1)
 curve(exp(AQ$coefficients[3])*x^AQ$coefficients[4], add=T, from=0, to=8000, col="blue", lty=2)
 curve(exp(AQ$coefficients[5])*x^AQ$coefficients[6], add=T, from=0, to=8000, col="blue", lwd=2)
 curve(exp(AQ$coefficients[7])*x^AQ$coefficients[8], add=T, from=0, to=8000, col="blue", lty=2)
