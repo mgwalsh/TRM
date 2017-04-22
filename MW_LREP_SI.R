@@ -5,12 +5,14 @@
 
 # Required packages
 # install.packages(c("downloader","rgdal","arm")), dependencies=TRUE)
-require(downloader)
-require(rgdal)
-require(arm)
+suppressPackageStartupMessages({
+  require(downloader)
+  require(rgdal)
+  require(arm)
+})
 
 # Data download -----------------------------------------------------------
-# Create a "Data" folder in your current working directory
+# Create a "LREP_data" folder in your current working directory
 dir.create("LREP_data", showWarnings=F)
 setwd("./LREP_data")
 
@@ -103,8 +105,4 @@ gidsrr <- merge(gidsrr, Yc, by="GID")
 gidsrr$SRI <- mlm2.ran$GID[,1]
 
 # Write site index file ---------------------------------------------------
-# Create a "Results" folder in your current working directory
-dir.create("Results", showWarnings=F)
-
-# Write csv to "./Results"
-write.csv(gidsrr, "./Results/MW_Site_Indices.csv", row.names=F)
+write.csv(gidsrr, "MW_Site_Indices.csv", row.names=F)
