@@ -1,30 +1,30 @@
-#+ Site-level Maize yield responses to fertilizer applications
-#+ Malawi LREP response trial data (courtesy of LREP)
-#+ LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
-#+ M. Walsh, September 2014
+#' Site-level Maize yield responses to fertilizer applications
+#' Malawi LREP response trial data (courtesy of LREP)
+#' LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
+#' M. Walsh, September 2014
 
 # Required packages
-# install.packages(c("downloader","proj4","arm")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","arm")), dependencies=TRUE)
 require(downloader)
-require(proj4)
+require(rgdal)
 require(arm)
 
-#+ Data download ----------------------------------------------------------
+# Data download -----------------------------------------------------------
 # Create a "Data" folder in your current working directory
-dir.create("Data", showWarnings=F)
-dat_dir <- "./Data"
+dir.create("LREP_data", showWarnings=F)
+setwd("./LREP_data")
 
 # LREP fertilizer response data download to "./Data"
-download("https://www.dropbox.com/s/i4dby04fl9j042a/MW_fert_trials.zip?dl=0", "./Data/MW_fert_trials.zip", mode="wb")
-unzip("./Data/MW_fert_trials.zip", exdir="./Data", overwrite=T)
-mwsite <- read.table(paste(dat_dir, "/Location.csv", sep=""), header=T, sep=",")
-mtrial <- read.table(paste(dat_dir, "/Trial.csv", sep=""), header=T, sep=",")
+download("https://www.dropbox.com/s/i4dby04fl9j042a/MW_fert_trials.zip?raw=1", "MW_fert_trials.zip", mode="wb")
+unzip("MW_fert_trials.zip", overwrite=T)
+mwsite <- read.table("Location.csv", header=T, sep=",")
+mtrial <- read.table("Trial.csv", header=T, sep=",")
 
 # Georeference and specify site ID's --------------------------------------
 # Project to Africa LAEA from UTM36S
-mw <- cbind(mwsite$Easting, mwsite$Northing)
-tr <- ptransform(mw, '+proj=utm +zone=36 +south +datum=WGS84 +units=m +no_defs', '+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs')
-colnames(tr) <- c("x","y","z")
+mw <- SpatialPoints(cbind(mwsite$Easting, mwsite$Northing), proj4string = CRS("+proj=utm +zone=36 +south +datum=WGS84 +units=m +no_defs"))
+tr <- as.data.frame(spTransform(mw, '+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs'))
+colnames(tr) <- c("x","y")
 mwsite <- cbind(mwsite, tr)
 
 # Define unique grid cell / site ID's (GID)
