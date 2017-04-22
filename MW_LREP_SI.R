@@ -56,15 +56,15 @@ plot(ecdf(trt2$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 plot(ecdf(trt3$Yt), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 
 # ECDF plots of treatment response ratios
-plot(ecdf(log(trt1$Yt/trt1$Yc)), main="", verticals=T, lty=1, lwd=1, xlim=c(-0.5,3), xlab="Treatment response ratio = log(Yt/Yc)", ylab="Cum. proportion of observations", do.points=F)
-abline(0.5,0, lty=2)
-plot(ecdf(log(trt2$Yt/trt2$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.points=F)
-plot(ecdf(log(trt3$Yt/trt3$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.points=F)
+# plot(ecdf(log(trt1$Yt/trt1$Yc)), main="", verticals=T, lty=1, lwd=1, xlim=c(-0.5,3), xlab="Treatment response ratio = log(Yt/Yc)", ylab="Cum. proportion of observations", do.points=F)
+# abline(0.5,0, lty=2)
+# plot(ecdf(log(trt2$Yt/trt2$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.points=F)
+# plot(ecdf(log(trt3$Yt/trt3$Yc)), add=T, main="", verticals=T, lty=1, lwd=1, do.points=F)
 
 # Response ratio plot
-plot(log(Yt/Yc)~log(Yc), ylab="Treatment response ratio = log(Yt/Yc)", xlab="Unfertilized control yield = log(Yc)", mwresp)
-abline(0,0, lwd=2, col="red")
-abline(log(2),0, col="grey")
+# plot(log(Yt/Yc)~log(Yc), ylab="Treatment response ratio = log(Yt/Yc)", xlab="Unfertilized control yield = log(Yc)", mwresp)
+# abline(0,0, lwd=2, col="red")
+# abline(log(2),0, col="grey")
 
 # REML models -------------------------------------------------------------
 # Treatment response ratio models
