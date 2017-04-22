@@ -85,10 +85,10 @@ abline(0,1, col="red")
 # display(mlm3)
 
 # Treatment yield model
-mlm4 <- lmer(log(Yt)~log(Yc)+NPS+Urea+log(Yc)*NPS+log(Yc)*Urea+(1|GID)+(1|Year/GID), data=mwresp)
-display(mlm4)
-plot(log(Yt)~fitted(mlm4), xlim=c(4,10), ylim=c(4,10), xlab="Modeled log(Yt)", ylab="Observed log(Yt)", mwresp)
-abline(0,1, col="red")
+# mlm4 <- lmer(log(Yt)~log(Yc)+NPS+Urea+log(Yc)*NPS+log(Yc)*Urea+(1|GID)+(1|Year/GID), data=mwresp)
+# display(mlm4)
+# plot(log(Yt)~fitted(mlm4), xlim=c(4,10), ylim=c(4,10), xlab="Modeled log(Yt)", ylab="Observed log(Yt)", mwresp)
+# abline(0,1, col="red")
 
 # Extract control yield and site response ratio indices at GID's ----------
 mlm2.ran <- ranef(mlm2)
