@@ -46,6 +46,7 @@ mwresp <- merge(mwsite.gid, mtrial, by="LID")
 
 # Exploratory plots -------------------------------------------------------
 # ECDF plots of control and treatment yields
+par(mfrow=c(1,2), mar=c(5,5,1,1))
 trt1 <- subset(mwresp, NPS==1 & Urea==1, select=c(Yt,Yc)) 
 trt2 <- subset(mwresp, NPS==2 & Urea==2, select=c(Yt,Yc)) 
 trt3 <- subset(mwresp, NPS==2 & Urea==3, select=c(Yt,Yc))
