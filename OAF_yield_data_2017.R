@@ -40,7 +40,7 @@ projection(yield) <- projection(shape)
 gadm <- yield %over% shape
 yield <- as.data.frame(yield)
 yield <- cbind(gadm[ ,c(5,7,9)], yield)
-colnames(yield) <- c("district","division","location","lon","lat","gpsalt","acc","yield","pdens","flood","striga","slope","sdepth","pltsize","dap","can")
+colnames(yield) <- c("district","division","location","lon","lat","gpsalt","gpsacc","yield","pdens","flood","striga","slope","sdepth","pltsize","dap","can")
 
 # project survey coords to grid CRS
 yield.proj <- as.data.frame(project(cbind(yield$lon, yield$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
