@@ -1,5 +1,5 @@
 # OAF 2017 Maize yields, Western Kenya data setup
-# Yield data courtesy of One Acre Fund. Also see @ https://oneacrefund.github.io/keyieldgap_2017/2017_kenya_yga.nb.html)
+# Yield data courtesy of One Acre Fund. See @ https://oneacrefund.github.io/keyieldgap_2017/2017_kenya_yga.nb.html)
 # M. Walsh, May 2018
 
 # Required packages
@@ -56,10 +56,10 @@ gsdat <- as.data.frame(cbind(yield, yieldgrid))
 gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates
 gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete observations
 
-# Identify observations in the lowest conditional quartile ----------------
-Q25.rq <- rq(log(yield)~log(pdens)+dap+can, tau = 0.25, data = mresp)
-gsdat$yq <- ifelse(exp(predict(Q25.rq, gsdat)) > gsdat$yield, 1, 0)
-prop.table(table(gsdat$Q25))
+# Identify measurements in below conditional quantile ---------------------
+q25.rq <- rq(log(yield)~log(pdens)+dap+can, tau = 0.25, data = gsdat) ## adjust tau
+gsdat$yqc <- ifelse(exp(predict(q25.rq, gsdat)) > gsdat$yield, "l", "h")
+prop.table(table(gsdat$yqc))
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
