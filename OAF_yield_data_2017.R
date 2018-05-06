@@ -56,10 +56,12 @@ gsdat <- as.data.frame(cbind(yield, yieldgrid))
 gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates
 gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete observations
 
-# Identify measurements in below conditional quantile ---------------------
-q25.rq <- rq(log(yield)~log(pdens)+dap+can, tau = 0.25, data = gsdat) ## adjust tau
-gsdat$yqc <- ifelse(exp(predict(q25.rq, gsdat)) > gsdat$yield, "l", "h")
-prop.table(table(gsdat$yqc))
+# Identify measurements in conditional quantile --------------------------
+qy.rq <- rq(log(yield)~log(pdens)+dap*can, tau = 0.25, data = gsdat) ## adjust tau
+summary(qy.rq)
+gsdat$qy <- ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "L", "H")
+prop.table(table(gsdat$qy))
+boxplot(yield~qy, gsdat)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
