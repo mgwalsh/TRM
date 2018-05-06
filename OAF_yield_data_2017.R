@@ -3,11 +3,12 @@
 # M. Walsh, May 2018
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","leaflet","htmlwidgets")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","raster","quantreg","leaflet","htmlwidgets")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(raster)
+  require(quantreg)
   require(leaflet)
   require(htmlwidgets)
 })
@@ -49,11 +50,16 @@ yield <- cbind(yield, yield.proj)
 coordinates(yield) <- ~x+y
 projection(yield) <- projection(yield)
 
-# extract gridded variables at GeoSurvey locations
+# extract gridded variables at survey locations
 yieldgrid <- extract(grids, yield)
 gsdat <- as.data.frame(cbind(yield, yieldgrid)) 
-# gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates ... if needed
-# gsdat <- gsdat[complete.cases(gsdat[ ,c(8:9,15:48)]),] ## removes incomplete cases
+gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates
+gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete observations
+
+# Identify observations in the lowest conditional quartile ----------------
+Q25.rq <- rq(log(yield)~log(pdens)+dap+can, tau = 0.25, data = mresp)
+gsdat$yq <- ifelse(exp(predict(Q25.rq, gsdat)) > gsdat$yield, 1, 0)
+prop.table(table(gsdat$Q25))
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
