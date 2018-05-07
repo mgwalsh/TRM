@@ -57,7 +57,7 @@ gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates
 gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete cases
 
 # Classify yield measurements by conditional quantile ---------------------
-# this is the yield gap estimate based on the current data at median values
+# this is the conditional yield gap based on the current data at median values
 qy.rq <- rq(log(yield)~log(pdens)+dap*can, tau = 0.5, data = gsdat) ## try tau values other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
