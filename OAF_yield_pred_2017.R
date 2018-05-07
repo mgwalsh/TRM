@@ -236,5 +236,5 @@ coordinates(gsdat) <- ~x+y
 projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
-write.csv(gsout, "./Results/OAF_preds.csv", row.names = F)
+write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
