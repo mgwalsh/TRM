@@ -207,7 +207,6 @@ st <- train(gf_val, cp_val,
 print(st)
 plot(varImp(st))
 st.pred <- predict(preds, st, type = "prob") ## spatial predictions
-plot(1-st.pred, axes = F)
 
 stopCluster(mc)
 
@@ -223,7 +222,6 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
 mask <- reclassify(1-st.pred, r) ## reclassify stacked predictions
-plot(mask, axes=F, legend=F)
 
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, 1-st.pred, mask)
