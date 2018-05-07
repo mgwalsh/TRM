@@ -228,7 +228,6 @@ plot(mask, axes=F, legend=F)
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, 1-st.pred, mask)
 names(gspreds) <- c("gl1","gl2","rf","gb","nn","st","mk")
-# change this to include other dependent variables e.g, $BP, $WP, $BIC
 writeRaster(gspreds, filename="./Results/KE_preds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 # Write output data frame -------------------------------------------------
@@ -236,5 +235,6 @@ coordinates(gsdat) <- ~x+y
 projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
+boxplot(yield~mk, notch=T, gsout)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
