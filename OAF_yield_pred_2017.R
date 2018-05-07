@@ -233,6 +233,7 @@ coordinates(gsdat) <- ~x+y
 projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
-boxplot(yield~mk, notch=T, gsout)
+gsout$mzone <- ifelse(gsout$mk == 0, "A", "B")
+boxplot(yield~mzone, notch=T, gsout)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
