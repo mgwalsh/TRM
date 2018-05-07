@@ -59,7 +59,7 @@ gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete case
 # Classify yield measurements by conditional quantile ---------------------
 qy.rq <- rq(log(yield)~log(pdens)+dap*can, tau = 0.5, data = gsdat) ## try tau values other than the median
 summary(qy.rq)
-gsdat$qy <- ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
+gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 prop.table(table(gsdat$qy))
 boxplot(yield~qy, notch=T, gsdat)
 
