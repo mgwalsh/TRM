@@ -1,4 +1,4 @@
-# Stacked predictions of 2017 OAF yield potentials
+# Stacked predictions of 2017 OAF yield propensities
 # M. Walsh, May 2018
 
 # Required packages
@@ -206,7 +206,7 @@ st <- train(gf_val, cp_val,
 # model outputs & predictions
 print(st)
 plot(varImp(st))
-st.pred <- predict(preds, st, type = "prob") ## spatial predictions
+st.pred <- predict(preds, st, type = "prob") ## spatial predictions of maize yield propensities
 
 stopCluster(mc)
 
