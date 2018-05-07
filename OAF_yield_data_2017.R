@@ -1,4 +1,4 @@
-# OAF 2017 Maize yields, Western Kenya data setup
+# OAF 2017 Maize yield propensities, Western Kenya data setup
 # Yield data courtesy of One Acre Fund. See @ https://oneacrefund.github.io/keyieldgap_2017/2017_kenya_yga.nb.html)
 # M. Walsh, May 2018
 
