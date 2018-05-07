@@ -18,7 +18,7 @@ suppressPackageStartupMessages({
 dir.create("OAF_data", showWarnings=F)
 setwd("./OAF_data")
 
-# download yield data
+# download OAF yield data
 # download("", "", mode = "wb")
 unzip("oaf_data_2017.csv.zip", overwrite = T)
 yield <- read.table("oaf_data_2017.csv", header = T, sep = ",")
@@ -54,14 +54,14 @@ projection(yield) <- projection(yield)
 yieldgrid <- extract(grids, yield)
 gsdat <- as.data.frame(cbind(yield, yieldgrid)) 
 gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates
-gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete observations
+gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete cases
 
-# classify yield measurements by conditional quantile ---------------------
-qy.rq <- rq(log(yield)~log(pdens)+dap*can, tau = 0.5, data = gsdat) ## set tau to values other than median
+# Classify yield measurements by conditional quantile ---------------------
+qy.rq <- rq(log(yield)~log(pdens)+dap*can, tau = 0.5, data = gsdat) ## try tau values other than the median
 summary(qy.rq)
 gsdat$qy <- ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
 prop.table(table(gsdat$qy))
-boxplot(yield~qy, gsdat)
+boxplot(yield~qy, notch=T, gsdat)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
