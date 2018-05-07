@@ -1,4 +1,4 @@
-# OAF 2017 Maize yield propensities, Western Kenya data setup
+# OAF 2017 Maize yield gap, Western Kenya data setup
 # Yield data courtesy of One Acre Fund. See @ https://oneacrefund.github.io/keyieldgap_2017/2017_kenya_yga.nb.html)
 # M. Walsh, May 2018
 
@@ -58,7 +58,7 @@ gsdat <- gsdat[complete.cases(gsdat[,c(8:9,15:48)]),] ## removes incomplete case
 
 # Classify yield propensities by conditional quantile ---------------------
 # this is the conditional yield gap based on the current data at median values
-qy.rq <- rq(log(yield)~log(pdens)+dap*can, tau = 0.5, data = gsdat) ## try tau values other than the median
+qy.rq <- rq(log(yield)~log(pdens)+dap*can, tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 prop.table(table(gsdat$qy))
