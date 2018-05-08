@@ -234,7 +234,7 @@ projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 
-# data summaries
+# prediction summaries
 gsout$mzone <- ifelse(gsout$mk == 0, "A", "B")
 boxplot(yield~mzone, notch=T, gsout)
 table(gsout$district, gsout$mzone)
