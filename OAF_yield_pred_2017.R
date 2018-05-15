@@ -1,4 +1,4 @@
-# Stacked predictions of 2017 OAF yield propensities
+# Stacked predictions of 2017 OAF maize yield gap propensities
 # M. Walsh, May 2018
 
 # Required packages
