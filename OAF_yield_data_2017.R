@@ -20,7 +20,7 @@ setwd("./OAF_data")
 
 # download OAF yield data
 # download("", "", mode = "wb")
-unzip("oaf_data_2017.csv.zip", overwrite = T)
+unzip("oaf_data_2017.csv.zip", overwrite = T) ## insert OAF data here
 yield <- read.table("oaf_data_2017.csv", header = T, sep = ",")
 
 # download GADM-L3 shapefile (courtesy: http://www.gadm.org)
