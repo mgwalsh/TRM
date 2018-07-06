@@ -3,27 +3,29 @@
 # Malawi LREP response trial data (courtesy of LREP & Todd Benson)
 # LREP data documentation at: https://www.dropbox.com/s/4qbxnz4mdl92pdv/Malawi%20area-specific%20fertilizer%20recs%20report.pdf?dl=0
 # Data pre-processing with: https://github.com/mgwalsh/TRM/blob/master/MW_LREP_SI.R
-# M.Walsh & J.Chen, December 2014
+# M. Walsh & J. Chen, December 2014
 
 # Required packages
 # install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","elasticnet")), dependencies=TRUE)
-require(downloader)
-require(raster)
-require(rgdal)
-require(caret)
-require(MASS)
-require(randomForest)
-require(gbm)
-require(nnet)
-require(elasticnet)
+suppressPackageStartupMessages({
+  require(downloader)
+  require(raster)
+  require(rgdal)
+  require(caret)
+  require(MASS)
+  require(randomForest)
+  require(gbm)
+  require(nnet)
+  require(elasticnet)
+})
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
-dir.create("LREP_Data", showWarnings=F)
-dat_dir <- "./LREP_Data"
+dir.create("LREP_data", showWarnings=F)
+setwd("./LREP_data")
 
 # Site index data download to "./LREP_Data"
-download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?dl=0", "./LREP_Data/MW_Site_Indices.csv", mode="wb")
+download("https://www.dropbox.com/s/o9588q2wci8mtiv/MW_Site_Indices.csv?raw=1", "MW_Site_Indices.csv", mode="wb")
 mwsite <- read.table(paste(dat_dir, "/MW_Site_Indices.csv", sep=""), header=T, sep=",")
 
 # Malawi grids download to "./LREP_Data" (~7.6 Mb)
