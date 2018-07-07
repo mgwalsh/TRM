@@ -58,9 +58,9 @@ gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]),] ## removes incomplete case
 
 # Classify yield propensities by conditional quantile ---------------------
 # this is the conditional yield gap based on the current data at median values
+gsdat <- gsdat[which(gsdat$can < 100 | gsdat$dap < 100), ]
 qy.rq <- rq(log(yield)~factor(year)+trt+dap*can, tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
-gsdat$yp <- exp(predict(qy.rq, gsdat))
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 prop.table(table(gsdat$qy))
 boxplot(yield~qy, notch=T, gsdat)
