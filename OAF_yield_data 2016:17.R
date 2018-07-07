@@ -64,6 +64,7 @@ qy.rq <- rq(log(yield)~factor(year)+factor(trt)+I(dap/fsize)*I(can/fsize), tau =
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 table(gsdat$qy)
+table(gsdat$district, gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
 # Write data frame --------------------------------------------------------
@@ -76,3 +77,4 @@ w <- leaflet() %>%
   addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
 saveWidget(w, 'OAF_yield_survey.html', selfcontained = T) ## save widget
+
