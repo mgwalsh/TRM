@@ -55,10 +55,10 @@ projection(yield) <- projection(yield)
 yieldgrid <- extract(grids, yield)
 gsdat <- as.data.frame(cbind(yield, yieldgrid)) 
 gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]),] ## removes incomplete cases
+gsdat <- gsdat[which(gsdat$can < 100 & gsdat$dap < 100), ] ## removes outlier fertilizer treatments
 
 # Classify yield propensities by conditional quantile ---------------------
 # this is the conditional yield gap based on the current data at median values
-gsdat <- gsdat[which(gsdat$can < 100 | gsdat$dap < 100), ]
 qy.rq <- rq(log(yield)~factor(year)+trt+dap*can, tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
