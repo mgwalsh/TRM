@@ -36,7 +36,7 @@ unzip("KE_250m_2017.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
 
-# set grid extent
+# set ROI grid extent
 ext <- data.frame(lat = c(-1.2,-1.2,1.2,1.2), lon = c(33.9,35.5,33.9,35.5)) ## set ROI extent in degrees
 names(ext) <- c("lat","lon")
 coordinates(ext) <- ~ lon + lat
