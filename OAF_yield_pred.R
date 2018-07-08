@@ -1,4 +1,4 @@
-# Stacked predictions of 2016/2017 OAF maize yield gap propensities
+# Stacked predictions of 2016/2017 OAF maize yield gap potentials
 # M. Walsh, July 2018
 
 # Required packages
@@ -17,7 +17,7 @@ suppressPackageStartupMessages({
 })
 
 # Data setup --------------------------------------------------------------
-# SourceURL <- "https://raw.githubusercontent.com/mgwalsh/blob/master/OAF_yield_data_2017.R"
+# SourceURL <- "https://github.com/mgwalsh/TRM/blob/master/OAF_yield_data%202016:17.R"
 # source_url(SourceURL)
 rm(list=setdiff(ls(), c("gsdat","grids"))) ## scrub extraneous objects in memory
 
@@ -34,11 +34,11 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$qy
 
 # raster calibration features
-gf_cal <- gs_cal[,17:48]
+gf_cal <- gs_cal[,13:44]
 
 # Central place theory model <glm> -----------------------------------------
 # select central place covariates
-gf_cpv <- gs_cal[,22:30]
+gf_cpv <- gs_cal[,18:26]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -172,7 +172,7 @@ nn.pred <- predict(grids, nn, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(1-gl1.pred, 1-gl2.pred, 1-rf.pred, 1-gb.pred, 1-nn.pred)
+preds <- stack(gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
 names(preds) <- c("gl1","gl2","rf", "gb","nn")
 plot(preds, axes = F)
 
@@ -184,7 +184,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
 cp_val <- gspred$qy
-gf_val <- gspred[,50:54] ## subset validation features
+gf_val <- gspred[,46:50] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -207,6 +207,7 @@ st <- train(gf_val, cp_val,
 print(st)
 plot(varImp(st))
 st.pred <- predict(preds, st, type = "prob") ## spatial predictions of maize yield propensities
+plot(st.pred, axes = F)
 
 stopCluster(mc)
 
@@ -221,10 +222,10 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 # Generate feature mask ---------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
-mask <- reclassify(1-st.pred, r) ## reclassify stacked predictions
+mask <- reclassify(st.pred, r) ## reclassify stacked predictions
 
 # Write prediction grids --------------------------------------------------
-gspreds <- stack(preds, 1-st.pred, mask)
+gspreds <- stack(preds, st.pred, mask)
 names(gspreds) <- c("gl1","gl2","rf","gb","nn","st","mk")
 writeRaster(gspreds, filename="./Results/KE_preds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
@@ -235,8 +236,8 @@ gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 
 # prediction summaries
-gsout$mzone <- ifelse(gsout$mk == 0, "A", "B")
+gsout$mzone <- ifelse(gsout$mk == 1, "A", "B")
 boxplot(yield~mzone, notch=T, gsout)
-table(gsout$district, gsout$mzone)
+table(gsout$mk, gsoutqy)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
