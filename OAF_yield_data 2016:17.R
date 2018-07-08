@@ -7,6 +7,7 @@
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
+  require(sp)
   require(raster)
   require(quantreg)
   require(leaflet)
@@ -24,7 +25,7 @@ setwd("./OAF_data")
 yield <- read.table("oafyga.csv", header = T, sep = ",")
 yield <- yield[!duplicated(yield), ] ## removes duplicates
 
-# download GADM-L3 shapefile (courtesy: http://www.gadm.org)
+# download GADM-L3 shapefile (@ http://www.gadm.org)
 download("https://www.dropbox.com/s/otspr9b9jtuyneh/KEN_adm3.zip?raw=1", "KEN_adm3.zip", mode = "wb")
 unzip("KEN_adm3.zip", overwrite = T)
 shape <- shapefile("KEN_adm3.zip")
@@ -34,6 +35,15 @@ download("https://www.dropbox.com/s/mz1t0zyq8uoqrhq/KE_250m_2017.zip?raw=1", "KE
 unzip("KE_250m_2017.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
+
+# set grid extent
+ext <- data.frame(lat = c(-1.2,-1.2,1.2,1.2), lon = c(33.9,35.5,33.9,35.5)) ## set ROI extent in degrees
+names(ext) <- c("lat","lon")
+coordinates(ext) <- ~ lon + lat
+proj4string(ext) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
+ext <- spTransform(ext, CRS("+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+bb <- extent(ext)
+grids <- crop(grids, bb)
 
 # Data setup --------------------------------------------------------------
 # attach GADM-L3 admin unit names from shape
