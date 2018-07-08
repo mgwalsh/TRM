@@ -238,6 +238,6 @@ gsout <- as.data.frame(cbind(gsdat, gspre))
 # prediction summaries
 gsout$mzone <- ifelse(gsout$mk == 1, "A", "B")
 boxplot(yield~mzone, notch=T, gsout)
-table(gsout$mk, gsout$qy)
+table(gsout$mzone, gsout$qy)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
