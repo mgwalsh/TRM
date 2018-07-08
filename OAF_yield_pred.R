@@ -241,3 +241,15 @@ boxplot(yield~mzone, notch=T, gsout)
 table(gsout$mzone, gsout$qy)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
+# Prediction map widget ---------------------------------------------------
+pred <- st.pred ## GeoSurvey ensemble probability
+pal <- colorBin("Greens", domain = 0:1) ## set color palette
+w <- leaflet() %>% 
+  setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 6) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addRasterImage(pred, colors = pal, opacity = 0.5, maxBytes=6000000) %>%
+  addLegend(pal = pal, values = values(pred), title = "Probability")
+w ## plot widget 
+saveWidget(w, 'TZ_BP_prob.html', selfcontained = T) ## save html ... change feature names here
+
+
