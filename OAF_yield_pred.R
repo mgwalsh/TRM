@@ -241,6 +241,14 @@ boxplot(yield~mzone, notch=T, gsout)
 table(gsout$mzone, gsout$qy)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
+# ECDF plot of predicted management zone maize yields
+mzA <- subset(gsout, mzone=='A', select=yield) 
+mzB <- subset(gsout, mzone=='B', select=yield) 
+plot(ecdf(mzA$yield), verticals=T, lty=1, lwd=1, col="dark green", do.points=F, main="",
+     xlab="Expected maize yield (Mg/ha)", ylab="Cum. proportion of observations")
+plot(ecdf(mzB$yield), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
+abline(0.5,0, lty=2, col="grey")
+
 # Prediction map widget ---------------------------------------------------
 pred <- st.pred ## GeoSurvey ensemble probability
 pal <- colorBin("Greens", domain = 0:1) ## set color palette
@@ -251,5 +259,4 @@ w <- leaflet() %>%
   addLegend(pal = pal, values = values(pred), title = "Probability")
 w ## plot widget 
 saveWidget(w, 'KE_high_prod_prob.html', selfcontained = T) ## save html ... change feature names here
-
 
