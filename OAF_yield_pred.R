@@ -250,7 +250,7 @@ plot(ecdf(mzB$yield), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
 abline(0.5,0, lty=2, col="grey")
 
 # Prediction map widget ---------------------------------------------------
-pred <- st.pred ## GeoSurvey ensemble probability
+pred <- st.pred ## management zone ensemble probability
 pal <- colorBin("Greens", domain = 0:1) ## set color palette
 w <- leaflet() %>% 
   setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 9) %>%
