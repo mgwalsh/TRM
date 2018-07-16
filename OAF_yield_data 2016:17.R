@@ -20,8 +20,8 @@ dir.create("OAF_data", showWarnings=F)
 setwd("./OAF_data")
 
 # download OAF yield data
-# download("", "", mode = "wb") ## insert OAF data link here
-# unzip("oafdata.csv.zip", overwrite = T)
+download("https://www.dropbox.com/s/666errqdga3cqrh/oafyga.csv.zip?raw=1", "oafyga.csv.zip", mode = "wb")
+unzip("oafyga.csv.zip", overwrite = T)
 yield <- read.table("oafyga.csv", header = T, sep = ",")
 yield <- yield[!duplicated(yield), ] ## removes duplicates
 
