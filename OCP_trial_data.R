@@ -68,7 +68,7 @@ projection(tresp) <- projection(tresp)
 # extract gridded variables at survey locations
 trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
-# gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]),] ## removes incomplete cases
+gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 14:56)]),] ## removes incomplete cases
 
 # Classify yield propensities by conditional quantile ---------------------
 # this is the conditional yield gap based on the current data at median values
