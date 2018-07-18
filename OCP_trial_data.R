@@ -71,7 +71,6 @@ gsdat <- as.data.frame(cbind(tresp, trespgrid))
 gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 14:56)]),] ## removes incomplete cases
 
 # Classify yield propensities by conditional quantile ---------------------
-# this is the conditional yield gap based on the current data at median values
 qy.rq <- rq(log(yo)~factor(trt)+pdens*cdens, tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
@@ -88,4 +87,4 @@ w <- leaflet() %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
-saveWidget(w, 'OAF_yield_survey.html', selfcontained = T) ## save widget
+saveWidget(w, 'OCP_response.html', selfcontained = T) ## save widget
