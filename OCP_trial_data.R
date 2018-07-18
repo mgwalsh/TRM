@@ -68,15 +68,15 @@ projection(tresp) <- projection(tresp)
 # extract gridded variables at survey locations
 trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
-gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 14:56)]),] ## removes incomplete cases
+gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 13:56)]),] ## removes incomplete cases
 
 # Classify yield propensities by conditional quantile ---------------------
 qy.rq <- rq(log(yo)~factor(trt)+pdens*cdens, tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
-gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
+gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yo, "B", "A"))
 table(gsdat$qy)
-table(gsdat$district, gsdat$qy)
-boxplot(yield~qy, notch=T, gsdat)
+table(gsdat$state, gsdat$qy)
+boxplot(yo~qy, notch=T, gsdat)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
