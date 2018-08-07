@@ -77,6 +77,7 @@ summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yo, "B", "A"))
 # table(gsdat$qy)
 # table(gsdat$state, gsdat$qy)
+boxplot(yo~trt, notch=T, gsdat) ## treatment differences
 boxplot(yo~qy, notch=T, gsdat) ## yield differences between propensity groups
 # table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
 # table(gsdat$tid, gsdat$qy) ## trial ID check
