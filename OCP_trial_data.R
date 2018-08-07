@@ -77,10 +77,11 @@ summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yo, "B", "A"))
 # table(gsdat$qy)
 # table(gsdat$state, gsdat$qy)
-boxplot(yo~trt, notch=T, gsdat) ## treatment differences
-boxplot(yo~qy, notch=T, gsdat) ## yield differences between propensity groups
 # table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
 # table(gsdat$tid, gsdat$qy) ## trial ID check
+boxplot(yo~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(yo~qy, notch=T, gsdat) ## yield differences between propensity groups
+boxplot(yo~trt*qy, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
