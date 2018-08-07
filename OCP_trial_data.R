@@ -38,7 +38,7 @@ glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
 
 # set ROI grid extent
-ext <- data.frame(lat = c(8.5,8.5,11.7,11.7), lon = c(5.3,11.8,5.3,11.8)) ## set ROI extent in degrees
+ext <- data.frame(lat = c(8.5,8.5,11.7,11.7), lon = c(5.3,11.8,5.3,11.8)) ## set ROI extent in decimal degrees
 names(ext) <- c("lat","lon")
 coordinates(ext) <- ~ lon + lat
 proj4string(ext) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
@@ -69,7 +69,7 @@ projection(tresp) <- projection(tresp)
 trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
 gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 13:56)]),] ## removes incomplete cases
-# plot(alt~MDEM, gsdat) ## gps altitude check against MDEM
+# plot(alt~MDEM, gsdat) ## gps altitude/location check against MDEM 
 
 # Classify yield propensities by conditional quantile ---------------------
 qy.rq <- rq(log(yo)~factor(trt)+log(pdens)*log(cdens), tau = 0.5, data = gsdat) ## try quantiles other than the median
