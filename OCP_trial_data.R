@@ -69,16 +69,17 @@ projection(tresp) <- projection(tresp)
 trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
 gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 13:56)]),] ## removes incomplete cases
+# plot(alt~MDEM, gsdat) ## gps altitude check against MDEM
 
 # Classify yield propensities by conditional quantile ---------------------
 qy.rq <- rq(log(yo)~factor(trt)+log(pdens)*log(cdens), tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yo, "B", "A"))
-table(gsdat$qy)
-table(gsdat$state, gsdat$qy)
+# table(gsdat$qy)
+# table(gsdat$state, gsdat$qy)
 boxplot(yo~qy, notch=T, gsdat) ## yield differences between propensity groups
-table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
-table(gsdat$tid, gsdat$qy) ## trial ID check
+# table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
+# table(gsdat$tid, gsdat$qy) ## trial ID check
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
