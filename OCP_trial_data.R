@@ -76,8 +76,9 @@ summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yo, "B", "A"))
 table(gsdat$qy)
 table(gsdat$state, gsdat$qy)
-boxplot(yo~qy, notch=T, gsdat)
-table(gsdat$tid, gsdat$qy)
+boxplot(yo~qy, notch=T, gsdat) ## yield differences between propensity groups
+table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
+table(gsdat$tid, gsdat$qy) ## trial ID check
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
@@ -88,4 +89,4 @@ w <- leaflet() %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
-saveWidget(w, 'OCP_response.html', selfcontained = T) ## save widget
+saveWidget(w, 'OCP_trials.html', selfcontained = T) ## save widget
