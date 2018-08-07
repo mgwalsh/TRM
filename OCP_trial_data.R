@@ -77,6 +77,7 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yo, "B", "A"))
 table(gsdat$qy)
 table(gsdat$state, gsdat$qy)
 boxplot(yo~qy, notch=T, gsdat)
+table(gsdat$tid, gsdat$qy)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
