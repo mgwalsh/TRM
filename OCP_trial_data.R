@@ -78,7 +78,7 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$tyld, "B", "A"))
 # table(gsdat$qy)
 # table(gsdat$state, gsdat$qy)
 # table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
-# table(gsdat$tid, gsdat$qy) ## trial ID check
+# table(gsdat$sid, gsdat$qy) ## trial ID check
 boxplot(tyld~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
 boxplot(tyld~qy, notch=T, gsdat) ## yield differences between propensity groups
 boxplot(tyld~trt*qy, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
