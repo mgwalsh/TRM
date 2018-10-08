@@ -72,20 +72,20 @@ gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 13:56)]),] ## removes incomplete ca
 # plot(alt~MDEM, gsdat) ## gps altitude/location check against MDEM 
 
 # Classify yield propensities by conditional quantile ---------------------
-qy.rq <- rq(log(yo)~factor(trt)+log(pdens)*log(cdens), tau = 0.5, data = gsdat) ## try quantiles other than the median
+qy.rq <- rq(log(tyld)~trt, tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
-gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yo, "B", "A"))
+gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$tyld, "B", "A"))
 # table(gsdat$qy)
 # table(gsdat$state, gsdat$qy)
 # table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
 # table(gsdat$tid, gsdat$qy) ## trial ID check
-boxplot(yo~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
-boxplot(yo~qy, notch=T, gsdat) ## yield differences between propensity groups
-boxplot(yo~trt*qy, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(tyld~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(tyld~qy, notch=T, gsdat) ## yield differences between propensity groups
+boxplot(tyld~trt*qy, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
-write.csv(gsdat, "./Results/OCP_gsdat.csv", row.names = F)
+write.csv(gsdat, "./Results/OCP_tdat.csv", row.names = F)
 
 # Yield survey map widget -------------------------------------------------
 w <- leaflet() %>% 
