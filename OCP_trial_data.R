@@ -20,11 +20,11 @@ setwd("./OCP_data")
 
 # Data downloads -----------------------------------------------------------
 # download IITA/OCP yield data
-download("https://www.dropbox.com/s/efr02hlxn3n1yvn/OCP_trial_data.zip?raw=1", "OCP_trial_data.zip", mode = "wb")
-unzip("OCP_trial_data.zip", overwrite = T)
-sites <- read.table("location.csv", header=T, sep=",")
-trial <- read.table("trial.csv", header=T, sep=",")
-tresp <- merge(sites, trial, by="tid")
+download("https://www.dropbox.com/s/hi75cnp3ejr4srk/OCP_trials.zip?raw=1", "OCP_trials.zip", mode = "wb")
+unzip("OCP_trials.zip", overwrite = T)
+sites <- read.table("sites.csv", header=T, sep=",")
+trial <- read.table("trials.csv", header=T, sep=",")
+tresp <- merge(sites, trial, by="sid")
 
 # download GADM-L2 shapefile (courtesy: http://www.gadm.org)
 download("https://www.dropbox.com/s/y3h6l7yu00orm78/NGA_adm2.zip?raw=1", "NGA_adm2.zip", mode = "wb")
@@ -53,10 +53,10 @@ projection(tresp) <- projection(shape)
 gadm <- tresp %over% shape
 tresp <- as.data.frame(tresp)
 tresp <- cbind(gadm[ ,c(5,7)], tresp)
-colnames(tresp) <- c("state","lga","tid","lat","lon","alt","acc","team","trt","pdens","cdens","yc","yo")
-# boxplot(yc~trt, tresp, notch=T)
-# boxplot(yo~trt, tresp, notch=T)
-# plot(yo~yc, tresp)
+colnames(tresp) <- c("state","lga","sid","lat","lon","alt","team","trt","ccob","tcob","twgt","cyld","tyld","ayld")
+# boxplot(cyld~trt, tresp, notch=T)
+# boxplot(tyld~trt, tresp, notch=T)
+# plot(tyld~cyld, tresp)
 
 # project survey coords to grid CRS
 tresp.proj <- as.data.frame(project(cbind(tresp$lon, tresp$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
