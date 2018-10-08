@@ -54,9 +54,6 @@ gadm <- tresp %over% shape
 tresp <- as.data.frame(tresp)
 tresp <- cbind(gadm[ ,c(5,7)], tresp)
 colnames(tresp) <- c("state","lga","sid","lat","lon","alt","team","trt","ccob","tcob","twgt","cyld","tyld","ayld")
-# boxplot(cyld~trt, tresp, notch=T)
-# boxplot(tyld~trt, tresp, notch=T)
-# plot(tyld~cyld, tresp)
 
 # project survey coords to grid CRS
 tresp.proj <- as.data.frame(project(cbind(tresp$lon, tresp$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
@@ -68,7 +65,7 @@ projection(tresp) <- projection(tresp)
 # extract gridded variables at survey locations
 trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
-gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 13:56)]),] ## removes incomplete cases
+# gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 13:56)]),] ## removes incomplete cases
 # plot(alt~MDEM, gsdat) ## gps altitude/location check against MDEM 
 
 # Classify yield propensities by conditional quantile ---------------------
@@ -81,7 +78,9 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$tyld, "B", "A"))
 # table(gsdat$sid, gsdat$qy) ## trial ID check
 boxplot(tyld~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
 boxplot(tyld~qy, notch=T, gsdat) ## yield differences between propensity groups
+boxplot(tcob~trt*qy, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
 boxplot(tyld~trt*qy, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+plot(tyld~cyld, xlab="Cob yield (kg/ha), circular plot", ylab="Cob yield (kg/ha), total plot", gsdat)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
