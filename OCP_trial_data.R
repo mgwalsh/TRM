@@ -3,13 +3,12 @@
 # M. Walsh & J. Huising, July 2018
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","quantreg","arm","leaflet","htmlwidgets")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","raster","arm","leaflet","htmlwidgets")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(sp)
   require(raster)
-  require(quantreg)
   require(arm)
   require(leaflet)
   require(htmlwidgets)
