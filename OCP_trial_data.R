@@ -3,13 +3,14 @@
 # M. Walsh & J. Huising, July 2018
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","quantreg","leaflet","htmlwidgets")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","raster","quantreg","arm","leaflet","htmlwidgets")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(sp)
   require(raster)
   require(quantreg)
+  require(arm)
   require(leaflet)
   require(htmlwidgets)
 })
@@ -65,21 +66,23 @@ projection(tresp) <- projection(tresp)
 # extract gridded variables at survey locations
 trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
-# gsdat <- gsdat[complete.cases(gsdat[,c(9:11, 13:56)]),] ## removes incomplete cases
 # plot(alt~MDEM, gsdat) ## gps altitude/location check against MDEM 
 
-# Classify yield propensities by conditional quantile ---------------------
-qy.rq <- rq(log(tyld)~trt, tau = 0.5, data = gsdat) ## try quantiles other than the median
-summary(qy.rq)
-gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$tyld, "B", "A"))
-# table(gsdat$qy)
-# table(gsdat$state, gsdat$qy)
-# table(gsdat$trt, gsdat$qy) ## check for treatment imbalances
-# table(gsdat$sid, gsdat$qy) ## trial ID check
+# Classify by site indices ------------------------------------------------
+si.lmer <- lmer(log(tyld)~trt+(1|sid), gsdat) ## random intercept (site-level) model
+display(si.lmer)
+si.ran <- ranef(si.lmer) ## extract random effects
+si <- as.data.frame(rownames(si.ran$sid))
+si$SI <- si.ran$sid[,1]
+colnames(si) <- c("sid","SI")
+si$SIC <- ifelse(si$SI > 0, "A", "B") ## classify above/below average site indices
+gsdat <- merge(gsdat, si, by="sid")
+
+# Plots
 boxplot(tyld~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
-boxplot(tyld~qy, notch=T, gsdat) ## yield differences between propensity groups
-boxplot(tcob~trt*qy, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
-boxplot(tyld~trt*qy, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(tyld~SIC, notch=T, gsdat) ## yield differences between site index groups
+boxplot(tcob~trt*SIC, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
+boxplot(tyld~trt*SIC, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
 plot(tyld~cyld, xlab="Cob yield (kg/ha), circular plot", ylab="Cob yield (kg/ha), total plot", gsdat)
 
 # Write data frame --------------------------------------------------------
