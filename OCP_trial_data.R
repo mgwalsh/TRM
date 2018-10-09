@@ -64,24 +64,34 @@ si.lmer <- lmer(log(tyld)~trt+(1|sid), gsdat) ## random intercept (site-level) m
 display(si.lmer)
 si.ran <- ranef(si.lmer) ## extract random effects
 si <- as.data.frame(rownames(si.ran$sid))
-si$SI <- si.ran$sid[,1]
-colnames(si) <- c("sid","SI")
-si$SIC <- ifelse(si$SI > 0, "A", "B") ## classify above/below average site indices
+si$si <- si.ran$sid[,1]
+colnames(si) <- c("sid","si")
+si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A/B)
 gsdat <- merge(gsdat, si, by="sid")
 si <- merge(si, sites, by="sid")
 
 # Plots
 boxplot(tyld~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
-boxplot(tyld~SIC, notch=T, gsdat) ## yield differences between site index groups
-boxplot(tcob~trt*SIC, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
-boxplot(tyld~trt*SIC, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(tyld~sic, notch=T, gsdat) ## yield differences between site index groups
+boxplot(tcob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
+boxplot(tyld~trt*sic, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
 plot(tyld~cyld, xlab="Cob yield (kg/ha), circular plot", ylab="Cob yield (kg/ha), total plot", gsdat)
+
+# extract gridded variables at trial locations
+si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+colnames(si.proj) <- c("x","y")
+si <- cbind(si, si.proj)
+coordinates(si) <- ~x+y
+projection(si) <- projection(tresp)
+sigrid <- extract(grids, si)
+sidat <- as.data.frame(cbind(si, sigrid)) 
 
 # Write data frames -------------------------------------------------------
 dir.create("Results", showWarnings = F)
-write.csv(gsdat, "./Results/OCP_tdat.csv", row.names = F)
+write.csv(gsdat, "./Results/OCP_gsdat.csv", row.names = F)
+write.csv(sidat, "./Results/OCP_sidat.csv", row.names = F)
 
-# Yield survey map widget -------------------------------------------------
+# Yield trial map widget --------------------------------------------------
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addCircleMarkers(si$lon, si$lat, clusterOptions = markerClusterOptions())
