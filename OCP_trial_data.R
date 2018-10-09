@@ -38,15 +38,6 @@ unzip("NG_250m_2017.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
 
-# set ROI grid extent
-ext <- data.frame(lat = c(8.5,8.5,11.7,11.7), lon = c(5.3,11.8,5.3,11.8)) ## set ROI extent in decimal degrees
-names(ext) <- c("lat","lon")
-coordinates(ext) <- ~ lon + lat
-proj4string(ext) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
-ext <- spTransform(ext, CRS("+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
-bb <- extent(ext)
-grids <- crop(grids, bb)
-
 # Data setup --------------------------------------------------------------
 # attach GADM-L2 admin unit names from shape
 coordinates(tresp) <- ~lon+lat
@@ -85,7 +76,7 @@ boxplot(tcob~trt*SIC, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## t
 boxplot(tyld~trt*SIC, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
 plot(tyld~cyld, xlab="Cob yield (kg/ha), circular plot", ylab="Cob yield (kg/ha), total plot", gsdat)
 
-# Write data frame --------------------------------------------------------
+# Write data frames -------------------------------------------------------
 dir.create("Results", showWarnings = F)
 write.csv(gsdat, "./Results/OCP_tdat.csv", row.names = F)
 
