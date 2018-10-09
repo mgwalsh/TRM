@@ -68,6 +68,7 @@ si$SI <- si.ran$sid[,1]
 colnames(si) <- c("sid","SI")
 si$SIC <- ifelse(si$SI > 0, "A", "B") ## classify above/below average site indices
 gsdat <- merge(gsdat, si, by="sid")
+si <- merge(si, sites, by="sid")
 
 # Plots
 boxplot(tyld~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
@@ -83,6 +84,6 @@ write.csv(gsdat, "./Results/OCP_tdat.csv", row.names = F)
 # Yield survey map widget -------------------------------------------------
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-  addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
+  addCircleMarkers(si$lon, si$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
 saveWidget(w, 'OCP_trials.html', selfcontained = T) ## save widget
