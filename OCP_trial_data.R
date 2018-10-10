@@ -59,7 +59,7 @@ gsdat <- as.data.frame(cbind(tresp, trespgrid))
 # plot(alt~MDEM, gsdat) ## gps altitude/location check against MDEM 
 
 # Classify by site indices ------------------------------------------------
-si.lmer <- lmer(log(tyld)~trt+(1|sid), gsdat) ## random intercept (site-level) model
+si.lmer <- lmer(log(tyld)~trt*+(1|sid), gsdat) ## random intercept (site-level) model
 display(si.lmer)
 si.ran <- ranef(si.lmer) ## extract random effects
 si <- as.data.frame(rownames(si.ran$sid))
