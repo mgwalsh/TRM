@@ -36,7 +36,7 @@ cp_cal <- gs_cal$qy
 # raster calibration features
 gf_cal <- gs_cal[,13:44]
 
-# Central place theory model <glm> -----------------------------------------
+# Central place theory model <glmnet> --------------------------------------
 # select central place covariates
 gf_cpv <- gs_cal[,18:26]
 
@@ -50,17 +50,17 @@ tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-gl1 <- train(gf_cpv, cp_cal, 
-             method = "glmStepAIC",
-             family = "binomial",
-             preProc = c("center","scale"), 
-             trControl = tc,
-             metric ="ROC")
+rr <- train(gf_cpv, cp_cal, 
+            method = "glmm",
+            family = "binomial",
+            preProc = c("center","scale"), 
+            trControl = tc,
+            metric ="ROC")
 
 # model outputs & predictions
-summary(gl1)
-print(gl1) ## ROC's accross cross-validation
-gl1.pred <- predict(grids, gl1, type = "prob") ## spatial predictions
+print(rr)
+plot(varImp(rr))
+rr.pred <- predict(grids, rr, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
