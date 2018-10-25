@@ -51,7 +51,7 @@ tc <- trainControl(method = "cv", classProbs = T,
 
 # model training
 rr <- train(gf_cpv, cp_cal, 
-            method = "glmm",
+            method = "glmnet",
             family = "binomial",
             preProc = c("center","scale"), 
             trControl = tc,
@@ -60,11 +60,10 @@ rr <- train(gf_cpv, cp_cal,
 # model outputs & predictions
 print(rr)
 plot(varImp(rr))
-rr.pred <- predict(grids, rr, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
-# GLM with all covariates -------------------------------------------------
+# GLMNET with all covariates ----------------------------------------------
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -75,17 +74,17 @@ tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-gl2 <- train(gf_cal, cp_cal, 
-             method = "glmStepAIC",
+rr1 <- train(gf_cal, cp_cal, 
+             method = "glmnet",
              family = "binomial",
              preProc = c("center","scale"), 
              trControl = tc,
              metric ="ROC")
 
 # model outputs & predictions
-summary(gl2)
-print(gl2) ## ROC's accross cross-validation
-gl2.pred <- predict(grids, gl2, type = "prob") ## spatial predictions
+summary(rr1)
+print(rr1) ## ROC's accross cross-validation
+rr1.pred <- predict(grids, rr1, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
@@ -172,8 +171,8 @@ nn.pred <- predict(grids, nn, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
-names(preds) <- c("gl1","gl2","rf", "gb","nn")
+preds <- stack(rr1.pred, rf.pred, gb.pred, nn.pred)
+names(preds) <- c("rr1","rf", "gb","nn")
 plot(preds, axes = F)
 
 # extract model predictions
@@ -184,7 +183,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
 cp_val <- gspred$qy
-gf_val <- gspred[,46:50] ## subset validation features
+gf_val <- gspred[,46:49] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -198,7 +197,7 @@ tc <- trainControl(method = "cv", classProbs = T,
 
 # model training
 st <- train(gf_val, cp_val,
-            method = "glmnet",
+            method = "glm",
             family = "binomial",
             metric = "ROC",
             trControl = tc)
@@ -226,7 +225,7 @@ mask <- reclassify(st.pred, r) ## reclassify stacked predictions
 
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, st.pred, mask)
-names(gspreds) <- c("gl1","gl2","rf","gb","nn","st","mk")
+names(gspreds) <- c("rr1","rf","gb","nn","st","mk")
 writeRaster(gspreds, filename="./Results/KE_preds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 # Write output data frame -------------------------------------------------
@@ -253,9 +252,9 @@ abline(0.5,0, lty=2, col="grey")
 pred <- st.pred ## management zone ensemble probability
 pal <- colorBin("Greens", domain = 0:1) ## set color palette
 w <- leaflet() %>% 
-  setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 9) %>%
+  setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 8) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-  addRasterImage(pred, colors = pal, opacity = 0.5, maxBytes=6000000) %>%
+  addRasterImage(pred, colors = pal, opacity = 0.7, maxBytes=6000000) %>%
   addLegend(pal = pal, values = values(pred), title = "Probability")
 w ## plot widget 
 saveWidget(w, 'KE_high_prod_prob.html', selfcontained = T) ## save html ... change feature names here
