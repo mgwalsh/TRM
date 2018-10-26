@@ -1,4 +1,4 @@
-# Stacked predictions of 2016/2017 OAF maize yield gap potentials
+# Stacked spatial predictions of 2016/2017 OAF maize yield gap potentials
 # M. Walsh, July 2018
 
 # Required packages
@@ -255,8 +255,8 @@ w <- leaflet() %>%
   setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 8) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addRasterImage(pred, colors = pal, opacity = 0.7, maxBytes=6000000) %>%
-  addLegend(pal = pal, values = values(pred), title = "High index probability") %>%
+  addLegend(pal = pal, values = values(pred), title = "SI = p(A) ") %>%
   addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
-saveWidget(w, 'KE_high_prod_prob.html', selfcontained = T) ## save html ... change feature names here
+saveWidget(w, 'KE_high_SI_prob.html', selfcontained = T) ## save html ... change feature names here
 
