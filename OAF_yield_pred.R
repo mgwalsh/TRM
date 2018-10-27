@@ -1,4 +1,4 @@
-# Stacked spatial predictions of 2016/2017 OAF maize yield gap potentials
+# Stacked spatial predictions of 2016/2017 OAF maize yield gaps
 # M. Walsh, July 2018
 
 # Required packages
@@ -84,7 +84,6 @@ rr1 <- train(gf_cal, cp_cal,
 # model outputs & predictions
 summary(rr1)
 print(rr1) ## ROC's accross cross-validation
-plot(varImp(rr1))
 rr1.pred <- predict(grids, rr1, type = "prob") ## spatial predictions
 
 stopCluster(mc)
@@ -111,7 +110,6 @@ rf <- train(gf_cal, cp_cal,
 
 # model outputs & predictions
 print(rf) ## ROC's accross tuning parameters
-plot(varImp(rf)) ## relative variable importance
 rf.pred <- predict(grids, rf, type = "prob") ## spatial predictions
 
 stopCluster(mc)
@@ -140,7 +138,6 @@ gb <- train(gf_cal, cp_cal,
 
 # model outputs & predictions
 print(gb) ## ROC's accross tuning parameters
-plot(varImp(gb)) ## relative variable importance
 gb.pred <- predict(grids, gb, type = "prob") ## spatial predictions
 
 stopCluster(mc)
@@ -166,10 +163,15 @@ nn <- train(gf_cal, cp_cal,
 
 # model outputs & predictions
 print(nn) ## ROC's accross tuning parameters
-plot(varImp(nn)) ## relative variable importance
 nn.pred <- predict(grids, nn, type = "prob") ## spatial predictions
 
 stopCluster(mc)
+
+# Variable importance plots -----------------------------------------------
+plot(varImp(rr1), main="Regularized regression")
+plot(varImp(rf), main="Random forest")
+plot(varImp(gb), main="Generalized boosting")
+plot(varImp(nn), main="Neural network")
 
 # Model stacking setup ----------------------------------------------------
 preds <- stack(rr1.pred, rf.pred, gb.pred, nn.pred)
@@ -219,13 +221,6 @@ cpa <- subset(cp_val, cp_val=="A", select=c(B))
 cp_eval <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC's on test set
 plot(cp_eval, 'ROC') ## plot ROC curve
 
-# Variable importance plots -----------------------------------------------
-par(mfcol=c(2,2))
-plot(varImp(rr1), main="Regularized regression")
-plot(varImp(rf), main="Random forest")
-plot(varImp(gb), main="Generalized boosting")
-plot(varImp(nn), main="Neural network")
-
 # Generate feature mask ---------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
@@ -243,8 +238,9 @@ gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 
 # prediction summaries
+par(mfrow=c(1:2))
 gsout$mzone <- ifelse(gsout$mk == 1, "A", "B")
-boxplot(yield~mzone, notch=T, gsout)
+boxplot(yield~mzone, notch=T, xlab="Site condition index", ylab="Expected maize yield (Mg/ha)", gsout)
 table(gsout$mzone, gsout$qy)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
