@@ -219,6 +219,13 @@ cpa <- subset(cp_val, cp_val=="A", select=c(B))
 cp_eval <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC's on test set
 plot(cp_eval, 'ROC') ## plot ROC curve
 
+# Variable importance plots -----------------------------------------------
+par(mfcol=c(2,2))
+plot(varImp(rr1), main="Regularized regression")
+plot(varImp(rf), main="Random forest")
+plot(varImp(gb), main="Generalized boosting")
+plot(varImp(nn), main="Neural network")
+
 # Generate feature mask ---------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
