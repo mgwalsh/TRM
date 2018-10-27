@@ -84,6 +84,7 @@ rr1 <- train(gf_cal, cp_cal,
 # model outputs & predictions
 summary(rr1)
 print(rr1) ## ROC's accross cross-validation
+plot(varImp(rr1))
 rr1.pred <- predict(grids, rr1, type = "prob") ## spatial predictions
 
 stopCluster(mc)
