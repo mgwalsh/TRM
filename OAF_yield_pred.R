@@ -235,11 +235,11 @@ projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 
-# prediction summaries
+# Prediction summaries ----------------------------------------------------
 par(mfrow=c(1:2))
 gsout$mzone <- ifelse(gsout$mk == 1, "A", "B")
 boxplot(yield~mzone, notch=T, xlab="Site index", ylab="Expected maize yield (Mg/ha)", gsout)
-table(gsout$mzone, gsout$qy)
+confusionMatrix(data = gsout$mzone, reference = gsout$qy, positive = "A")
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
 # ECDF plot of predicted management zone maize yields
