@@ -1,4 +1,4 @@
-# Stacked spatial predictions of 2016/2017 OAF maize yield gaps
+# Stacked spatial predictions of 2016/2017 OAF maize site indices
 # M. Walsh, July 2018
 
 # Required packages
@@ -238,7 +238,7 @@ gsout <- as.data.frame(cbind(gsdat, gspre))
 # prediction summaries
 par(mfrow=c(1:2))
 gsout$mzone <- ifelse(gsout$mk == 1, "A", "B")
-boxplot(yield~mzone, notch=T, xlab="Site condition index", ylab="Expected maize yield (Mg/ha)", gsout)
+boxplot(yield~mzone, notch=T, xlab="Site index", ylab="Expected maize yield (Mg/ha)", gsout)
 table(gsout$mzone, gsout$qy)
 write.csv(gsout, "./Results/OAF_preds_2017.csv", row.names = F)
 
