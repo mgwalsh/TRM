@@ -1,4 +1,4 @@
-# Stacked predictions of Nigeria site indices
+# Stacked predictions of Nigeria OCP site indices
 # M. Walsh, January 2019
 
 # Required packages
