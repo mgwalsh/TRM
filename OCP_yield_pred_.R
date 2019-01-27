@@ -247,6 +247,6 @@ w <- leaflet() %>%
   setView(lng = mean(sidat$lon), lat = mean(sidat$lat), zoom = 6) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addRasterImage(pred, colors = pal, opacity = 0.6, maxBytes=6000000) %>%
-  addLegend(pal = pal, values = values(pred), title = "Settlement prob.")
+  addLegend(pal = pal, values = values(pred), title = "Site index prob.")
 w ## plot widget 
 saveWidget(w, 'NG_OCP_sic.html', selfcontained = T) ## save html ... change feature names here
