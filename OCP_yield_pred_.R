@@ -249,4 +249,4 @@ w <- leaflet() %>%
   addRasterImage(pred, colors = pal, opacity = 0.6, maxBytes=6000000) %>%
   addLegend(pal = pal, values = values(pred), title = "Site index prob.")
 w ## plot widget 
-saveWidget(w, 'NG_OCP_sic.html', selfcontained = T) ## save html ... change feature names here
+saveWidget(w, 'NG_OCP_sic.html', selfcontained = T)
