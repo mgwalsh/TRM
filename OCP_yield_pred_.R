@@ -229,9 +229,24 @@ plot(mask, axes=F)
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, st.pred, mask)
 names(gspreds) <- c("gl1","gl2","rf","gb","nn","st","mk")
-writeRaster(gspreds, filename="./Results/TZ_cppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(gspreds, filename="./Results/NG__OCP_sic_preds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 # Write output data frame -------------------------------------------------
-gspre <- extract(gspreds, gsdat)
-gsout <- as.data.frame(cbind(gsdat, gspre))
-write.csv(gsout, "./Results/TZ_gsout.csv", row.names = F)
+coordinates(sidat) <- ~x+y
+projection(sidat) <- projection(grids)
+gspre <- extract(gspreds, sidat)
+gsout <- as.data.frame(cbind(sidat, gspre))
+gsout$mzone <- ifelse(gsout$mk == 1, "A", "B")
+confusionMatrix(data = gsout$mzone, reference = gsout$sic, positive = "A")
+write.csv(gsout, "./Results/OCP_sic_out.csv", row.names = F)
+
+# Prediction map widget ---------------------------------------------------
+pred <- st.pred ## GeoSurvey ensemble probability
+pal <- colorBin("Greens", domain = 0:1) ## set color palette
+w <- leaflet() %>% 
+  setView(lng = mean(sidat$lon), lat = mean(sidat$lat), zoom = 6) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addRasterImage(pred, colors = pal, opacity = 0.6, maxBytes=6000000) %>%
+  addLegend(pal = pal, values = values(pred), title = "Settlement prob.")
+w ## plot widget 
+saveWidget(w, 'NG_OCP_sic.html', selfcontained = T) ## save html ... change feature names here
