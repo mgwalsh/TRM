@@ -74,7 +74,7 @@ boxplot(tyld~trt, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## trea
 boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## yield differences between site index classes
 boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
 
-# quantile control/treatment plot
+# quantile control/treatment yield plot
 par(pty="s")
 plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", xlim=c(-5,10005), cex.lab=1.3, gsdat)
 YQ <- rq(log(tyld)~log(cyld), tau=c(0.05,0.5,0.95), data=gsdat)
