@@ -1,6 +1,6 @@
 # TAMASA maize fertilizer nutrient ommission trials, Central Ethiopia, 2015/16
 # Yield trial data courtesy of CIMMYT
-# M. Walsh, Z. Ahamed, J. Chamberlin & P. Craufurd, May 2019
+# M. Walsh, Z. Ahmed, J. Chamberlin & P. Craufurd, May 2019
 
 # Required packages
 # install.packages(c("downloader","rgdal","raster","arm","leaflet","htmlwidgets")), dependencies=TRUE)
@@ -72,6 +72,7 @@ si <- merge(si, sites, by="sid")
 boxplot(tyld~trt, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
 boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## yield differences between site index classes
 boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
+
 par(pty="s")
 plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", cex.lab=1.3, gsdat)
 
