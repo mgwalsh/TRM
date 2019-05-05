@@ -58,7 +58,7 @@ trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
 
 # Classify by site indices ------------------------------------------------
-si.lmer <- lmer(log(tyld)~log(cyld)*trt+(1|sid), gsdat) ## random intercept (site-level) model
+si.lmer <- lmer(log(tyld)~log(cyld)*trt+(1|sid)+(1|year), gsdat) ## random intercept (site-level) model
 summary(si.lmer)
 si.ran <- ranef(si.lmer) ## extract random effects
 si <- as.data.frame(rownames(si.ran$sid))
