@@ -69,9 +69,9 @@ gsdat <- merge(gsdat, si, by="sid")
 si <- merge(si, sites, by="sid")
 
 # Plots
-boxplot(tyld~trt, notch=T, ylab="Yield (kg/ha)", ylim=c(0,14000), gsdat) ## treatment differences
-boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,14000), gsdat) ## yield differences between site index classes
-boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,14000), gsdat) ## treatment differences
+boxplot(tyld~trt, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
+boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## yield differences between site index classes
+boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
 par(pty="s")
 plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", cex.lab=1.3, gsdat)
 
