@@ -58,6 +58,15 @@ projection(tresp) <- projection(tresp)
 trespgrid <- extract(grids, tresp)
 gsdat <- as.data.frame(cbind(tresp, trespgrid)) 
 
+# quantile control/treatment yield plot
+par(pty="s")
+plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", xlim=c(-5,10005), cex.lab=1.3, gsdat)
+YQ <- rq(log(tyld)~log(cyld), tau=c(0.05,0.5,0.95), data=gsdat)
+print(YQ)
+curve(exp(YQ$coefficients[1])*x^YQ$coefficients[2], add=T, from=0, to=10000, col="blue", lwd=2)
+curve(exp(YQ$coefficients[3])*x^YQ$coefficients[4], add=T, from=0, to=10000, col="red", lwd=2)
+curve(exp(YQ$coefficients[5])*x^YQ$coefficients[6], add=T, from=0, to=10000, col="blue", lwd=2)
+
 # Classify by site indices ------------------------------------------------
 si.lmer <- lmer(log(tyld)~log(cyld)*trt+(1|sid)+(1|year), gsdat) ## random intercept (site-level) model
 summary(si.lmer)
@@ -73,15 +82,6 @@ si <- merge(si, sites, by="sid")
 boxplot(tyld~trt, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
 boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## yield differences between site index classes
 boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
-
-# quantile control/treatment yield plot
-par(pty="s")
-plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", xlim=c(-5,10005), cex.lab=1.3, gsdat)
-YQ <- rq(log(tyld)~log(cyld), tau=c(0.05,0.5,0.95), data=gsdat)
-print(YQ)
-curve(exp(YQ$coefficients[1])*x^YQ$coefficients[2], add=T, from=0, to=10000, col="blue", lwd=2)
-curve(exp(YQ$coefficients[3])*x^YQ$coefficients[4], add=T, from=0, to=10000, col="red", lwd=2)
-curve(exp(YQ$coefficients[5])*x^YQ$coefficients[6], add=T, from=0, to=10000, col="blue", lwd=2)
 
 # extract gridded variables at trial locations
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
