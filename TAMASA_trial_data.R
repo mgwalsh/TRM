@@ -72,7 +72,8 @@ si <- merge(si, sites, by="sid")
 boxplot(tyld~trt, notch=T, ylab="Yield (kg/ha)", ylim=c(0,14000), gsdat) ## treatment differences
 boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,14000), gsdat) ## yield differences between site index classes
 boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,14000), gsdat) ## treatment differences
-plot(tyld~cyld, xlab="Yield (kg/ha)", ylab="Yield (kg/ha)", gsdat)
+par(pty="s")
+plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", cex.lab=1.3, gsdat)
 
 # extract gridded variables at trial locations
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
