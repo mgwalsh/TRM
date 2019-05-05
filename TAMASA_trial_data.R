@@ -82,9 +82,10 @@ gsdat <- merge(gsdat, si, by="sid")
 si <- merge(si, sites, by="sid")
 
 # Plots
-boxplot(tyld~trt, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
-boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## yield differences between site index classes
-boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), gsdat) ## treatment differences
+dev.off()
+boxplot(tyld~trt, notch=T, ylab="Yield response (kg/ha)", ylim=c(0,15000), cex.lab=1.3, gsdat) ## treatment differences
+boxplot(tyld~sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), cex.lab=1.3, gsdat) ## yield differences between site index classes
+boxplot(tyld~trt*sic, notch=T, ylab="Yield (kg/ha)", ylim=c(0,15000), cex.lab=1.3, gsdat) ## treatment differences
 
 # extract gridded variables at trial locations
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
