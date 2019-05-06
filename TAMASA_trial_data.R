@@ -70,7 +70,7 @@ curve(exp(YQ$coefficients[5])*x^YQ$coefficients[6], add=T, from=0, to=10000, col
 # Classify by site indices ------------------------------------------------
 si.lmer <- lmer(log(tyld)~log(cyld)*trt+(1|sid)+(1|year), gsdat) ## random intercept (site-level) model
 display(si.lmer)
-plot(tyld~exp(fitted(si.lmer)), xlab="Predicted yield (kg/ha)", ylab="Treatment yield (kg/ha)", cex.lab=1.3, gsdat)
+plot(tyld~exp(fitted(si.lmer)), xlab="Predicted yield (kg/ha)", ylab="Measured yield (kg/ha)", cex.lab=1.3, gsdat)
 abline(c(0,1), col="red", lwd=2)
 
 # extract random effects
