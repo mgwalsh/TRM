@@ -18,6 +18,7 @@ suppressPackageStartupMessages({
 # Create a data folder in your current working directory
 dir.create("TAMASA_data", showWarnings=F)
 setwd("./TAMASA_data")
+dir.create("Results", showWarnings = F)
 
 # Data downloads -----------------------------------------------------------
 # download TAMASA yield data
@@ -61,7 +62,7 @@ gsdat <- as.data.frame(cbind(tresp, trespgrid))
 # quantile control/treatment yield plot
 par(pty="s")
 plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", xlim=c(-5,10005), cex.lab=1.3, gsdat)
-YQ <- rq(log(tyld)~log(cyld), tau=c(0.05,0.5,0.95), data=gsdat)
+YQ <- rq(log(tyld)~log(cyld), tau=c(0.25,0.5,0.75), data=gsdat)
 print(YQ)
 curve(exp(YQ$coefficients[1])*x^YQ$coefficients[2], add=T, from=0, to=10000, col="blue", lwd=2)
 curve(exp(YQ$coefficients[3])*x^YQ$coefficients[4], add=T, from=0, to=10000, col="red", lwd=2)
@@ -98,7 +99,6 @@ sigrid <- extract(grids, si)
 sidat <- as.data.frame(cbind(si, sigrid)) 
 
 # Write data frames -------------------------------------------------------
-dir.create("Results", showWarnings = F)
 write.csv(gsdat, "./Results/TAMASA_gsdat.csv", row.names = F)
 write.csv(sidat, "./Results/TAMASA_sidat.csv", row.names = F)
 
