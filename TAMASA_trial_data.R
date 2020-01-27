@@ -19,6 +19,7 @@ suppressPackageStartupMessages({
 dir.create("TAMASA_data", showWarnings=F)
 setwd("./TAMASA_data")
 dir.create("Results", showWarnings = F)
+rm(list = ls()) ## scrub extraneous objects in memory
 
 # Data downloads -----------------------------------------------------------
 # download TAMASA yield data
