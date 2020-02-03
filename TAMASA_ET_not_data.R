@@ -47,11 +47,11 @@ tresp$trti <- ifelse(tresp$tyld > rlevel*tresp$cyld, 1, 0)
 # Quantile regression, control vs NOT treatment yields
 par(pty="s")
 plot(tyld~cyld, xlab="Control yield (kg/ha)", ylab="Treatment yield (kg/ha)", xlim=c(-5,10005), cex.lab=1.3, tresp)
-YQ <- rq(log(tyld)~log(cyld), tau=c(0.25,0.5,0.75), data=tresp)
-print(YQ)
-curve(exp(YQ$coefficients[1])*x^YQ$coefficients[2], add=T, from=0, to=10000, col="blue", lwd=2)
-curve(exp(YQ$coefficients[3])*x^YQ$coefficients[4], add=T, from=0, to=10000, col="red", lwd=2)
-curve(exp(YQ$coefficients[5])*x^YQ$coefficients[6], add=T, from=0, to=10000, col="blue", lwd=2)
+yq <- rq(log(tyld)~log(cyld), tau=c(0.25,0.5,0.75), data=tresp)
+print(yq)
+curve(exp(yq$coefficients[1])*x^yq$coefficients[2], add=T, from=0, to=10000, col="blue", lwd=2)
+curve(exp(yq$coefficients[3])*x^yq$coefficients[4], add=T, from=0, to=10000, col="red", lwd=2)
+curve(exp(yq$coefficients[5])*x^yq$coefficients[6], add=T, from=0, to=10000, col="blue", lwd=2)
 
-
+# GLM yield response probability
 
