@@ -57,7 +57,7 @@ curve(exp(yq$coefficients[5])*x^yq$coefficients[6], add=T, from=0, to=10000, col
 rp <- glm(trti~trt+log(cyld), family=binomial(link="logit"), data=tresp)
 display(rp)
 
-# GLMER yield response probability ... site response index
+# GLMER yield response probability ... site (response) index
 rm <- glmer(trti~trt+log(cyld)+(1|sid), family=binomial(link="logit"), data=tresp)
 display(rm)
 ranef(rm)
