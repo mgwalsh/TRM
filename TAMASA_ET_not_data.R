@@ -3,12 +3,12 @@
 # M. Walsh, J. Chamberlin, January 2019
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","arm","quantreg")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","arm","MASS","quantreg")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
-  require(raster)
   require(arm)
+  require(MASS)
   require(quantreg)
 })
 
@@ -40,7 +40,7 @@ tresp <- as.data.frame(tresp)
 tresp <- cbind(gadm[ ,c(5,7,9)], tresp)
 colnames(tresp) <- c("region","zone","woreda","tid","sid","lon","lat","cyld","year","loc","trt","tyld")
 tresp$resp <- tresp$tyld-tresp$cyld
-rlevel <- 2 ## set intended response-level relative to current yield
+rlevel <- 2 ## set intended response-level relative to current untreated yield (2 = double control yield)
 tresp$trti <- ifelse(tresp$tyld > rlevel*tresp$cyld, 1, 0)
 
 # Regressions -------------------------------------------------------------
@@ -54,4 +54,13 @@ curve(exp(yq$coefficients[3])*x^yq$coefficients[4], add=T, from=0, to=10000, col
 curve(exp(yq$coefficients[5])*x^yq$coefficients[6], add=T, from=0, to=10000, col="blue", lwd=2)
 
 # GLM yield response probability
+rp <- glm(trti~trt+log(cyld), family=binomial(link="logit"), data=tresp)
+display(rp)
+
+# GLMER yield response probability ... site response index
+rm <- glmer(trti~trt+log(cyld)+(1|sid), family=binomial(link="logit"), data=tresp)
+display(rm)
+ranef(rm)
+
+
 
