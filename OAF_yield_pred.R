@@ -60,7 +60,6 @@ rr <- train(gf_cpv, cp_cal,
 # model outputs & predictions
 print(rr)
 plot(varImp(rr))
-
 stopCluster(mc)
 
 # GLMNET with all covariates ----------------------------------------------
@@ -86,7 +85,6 @@ summary(rr1)
 print(rr1) ## ROC's accross cross-validation
 plot(varImp(rr1))
 rr1.pred <- predict(grids, rr1, type = "prob") ## spatial predictions
-
 stopCluster(mc)
 
 # Random forest <randomForest> --------------------------------------------
@@ -113,7 +111,6 @@ rf <- train(gf_cal, cp_cal,
 print(rf) ## ROC's accross tuning parameters
 plot(varImp(rf))
 rf.pred <- predict(grids, rf, type = "prob") ## spatial predictions
-
 stopCluster(mc)
 
 # Generalized boosting <gbm> ----------------------------------------------
@@ -142,7 +139,6 @@ gb <- train(gf_cal, cp_cal,
 print(gb) ## ROC's accross tuning parameters
 plot(varImp(gb))
 gb.pred <- predict(grids, gb, type = "prob") ## spatial predictions
-
 stopCluster(mc)
 
 # Neural network <nnet> ---------------------------------------------------
@@ -168,7 +164,6 @@ nn <- train(gf_cal, cp_cal,
 print(nn) ## ROC's accross tuning parameters
 plot(varImp(nn))
 nn.pred <- predict(grids, nn, type = "prob") ## spatial predictions
-
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
@@ -208,7 +203,6 @@ print(st)
 plot(varImp(st))
 st.pred <- predict(preds, st, type = "prob") ## spatial predictions of maize yield propensities
 plot(st.pred, axes = F)
-
 stopCluster(mc)
 
 # Receiver-operator characteristics ---------------------------------------
