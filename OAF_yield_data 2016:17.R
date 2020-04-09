@@ -77,7 +77,7 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
 table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
-# similar classification as the previous, but with year as a random, rather than fixed effect
+# similar classification as the previous, but with year as a random, rather than as a fixed effect
 y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year), data = gsdat)
 display(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
