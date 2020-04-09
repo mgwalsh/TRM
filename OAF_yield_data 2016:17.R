@@ -3,13 +3,14 @@
 # M. Walsh, July 2018
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","quantreg","leaflet","htmlwidgets")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","raster","quantreg","arm","leaflet","htmlwidgets")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(sp)
   require(raster)
   require(quantreg)
+  require(arm)
   require(leaflet)
   require(htmlwidgets)
 })
@@ -74,8 +75,15 @@ qy.rq <- rq(log(yield)~factor(year)+factor(trt)+dap*can, tau = 0.5, data = gsdat
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 table(gsdat$qy)
-table(gsdat$district, gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
+
+# similar classification as the previous, with year as a random effect
+y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year), data = gsdat)
+display(y.lme)
+gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
+table(gsdat$my)
+boxplot(yield~my, notch=T, gsdat)
+table(gsdat$qy, gsdat$my)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
