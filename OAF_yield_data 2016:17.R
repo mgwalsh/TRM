@@ -71,7 +71,7 @@ gsdat <- gsdat[which(gsdat$fsize > 0), ] ## removes field size = 0
 
 # Define unique grid cell ID's (GID)
 # Specify pixel scale (res.pixel, in m)
-res.pixel <- 250
+res.pixel <- 1000
 
 # Grid ID (GID) definition
 xgid <- ceiling(abs(gsdat$x)/res.pixel)
@@ -79,7 +79,7 @@ ygid <- ceiling(abs(gsdat$y)/res.pixel)
 gidx <- ifelse(gsdat$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
 gidy <- ifelse(gsdat$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
-gsdat <- cbind(gsdat, GID)
+gsdat <- cbind(GID, gsdat)
 
 # Classify yield propensities by conditional quantile ---------------------
 # this is the conditional yield gap based on the current data at median values
