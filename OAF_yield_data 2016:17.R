@@ -69,9 +69,9 @@ gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]),] ## removes incomplete case
 gsdat <- gsdat[which(gsdat$can < 100 & gsdat$dap < 100), ] ## removes outlier fertilizer treatments
 gsdat <- gsdat[which(gsdat$fsize > 0), ] ## removes field size = 0
 
-# Define unique grid cell ID's (GID)
+# Define unique grid ID's (GID)
 # Specify pixel scale (res.pixel, in m)
-res.pixel <- 1000
+res.pixel <- 10000
 
 # Grid ID (GID) definition
 xgid <- ceiling(abs(gsdat$x)/res.pixel)
