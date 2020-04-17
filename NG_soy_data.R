@@ -9,7 +9,6 @@ suppressPackageStartupMessages({
   require(rgdal)
   require(sp)
   require(raster)
-  require(quantreg)
   require(arm)
   require(leaflet)
   require(htmlwidgets)
@@ -58,33 +57,32 @@ colnames(rct) <- c("state","lga","year","source","study","id","lon","lat","yc","
 rct.proj <- as.data.frame(project(cbind(rct$lon, rct$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(rct.proj) <- c("x","y")
 rct <- cbind(rct, rct.proj)
-coordinates(rct) <- ~x+y
-projection(rct) <- projection(rct)
-
-# extract gridded variables at survey locations
-rctgrid <- extract(grids, rct)
-gsdat <- as.data.frame(cbind(rct, rctgrid)) 
 
 # Define unique grid ID's (GID)
 # Specify pixel scale (res.pixel, in m)
 res.pixel <- 250
 
 # Grid ID (GID) definition
-xgid <- ceiling(abs(gsdat$x)/res.pixel)
-ygid <- ceiling(abs(gsdat$y)/res.pixel)
-gidx <- ifelse(gsdat$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
-gidy <- ifelse(gsdat$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
+xgid <- ceiling(abs(rct$x)/res.pixel)
+ygid <- ceiling(abs(rct$y)/res.pixel)
+gidx <- ifelse(rct$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
+gidy <- ifelse(rct$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
-gsdat <- cbind(GID, gsdat)
+gsdat <- cbind(GID, rct)
 
-# Classify yield response propensities by conditional mean ----------------
-yt.lme <- lmer(log(yt)~log(yc)+(1|year)+(1|GID), data = gsdat)
+# Estimate site indices ---------------------------------------------------
+yt.lme <- lmer(log(yt)~log(yc)+(1|year)+(1|GID), data = gsdat) ## mixed effects model
 summary(yt.lme) 
-gsdat$yte <- exp(fitted(yt.lme))
+gsdat$eyt <- exp(fitted(yt.lme)) ## expected yield
 par(pty="s")
 plot(yt~exp(fitted(yt.lme)), xlab="Expected yield (kg/ha)", ylab="Measured yield (kg/ha)", xlim = c(-5, 4505), ylim = c(-5, 4505), cex.lab=1.1, gsdat)
 abline(c(0,1), col="red", lwd=2)
-gsdat$ysi <- as.factor(ifelse(exp(fitted(yt.lme, gsdat)) > gsdat$yt, "B", "A"))
-table(gsdat$ysi)
-boxplot(yt~ysi, notch=T, gsdat)
 
+# extract random effects and classify by site indices (si)
+si.ran <- ranef(yt.lme) ## extract random effects
+si <- as.data.frame(rownames(si.ran$GID))
+si$si <- si.ran$GID[,1]
+colnames(si) <- c("GID","si")
+si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A/B)
+tmp <- aggregate(.~GID, data = gsdat[, 8:14], mean)
+sidat <- merge(tmp, si, by="GID")
