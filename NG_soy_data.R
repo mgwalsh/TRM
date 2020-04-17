@@ -3,12 +3,13 @@
 # M. Walsh & J. van Heerwaarden, April 2020
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","arm","leaflet","htmlwidgets")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","raster","quantreg","arm","leaflet","htmlwidgets")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(sp)
   require(raster)
+  require(quantreg)
   require(arm)
   require(leaflet)
   require(htmlwidgets)
@@ -75,6 +76,15 @@ gidx <- ifelse(gsdat$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
 gidy <- ifelse(gsdat$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 gsdat <- cbind(GID, gsdat)
+
+# Classify yield propensities by conditional mean -------------------------
+yt.lme <- lmer(log(yt)~log(yc)+(1|year)+(1|GID), data = gsdat)
+summary(yt.lme)
+plot(yt~exp(fitted(yt.lme)), gsdat)
+gsdat$ysi <- as.factor(ifelse(exp(fitted(yt.lme, gsdat)) > gsdat$yt, "B", "A"))
+table(gsdat$ysi)
+boxplot(yt~yp, notch=T, gsdat)
+
 
 
 
