@@ -77,14 +77,11 @@ gidy <- ifelse(gsdat$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 gsdat <- cbind(GID, gsdat)
 
-# Classify yield propensities by conditional mean -------------------------
+# Classify yield response propensities by conditional mean ----------------
 yt.lme <- lmer(log(yt)~log(yc)+(1|year)+(1|GID), data = gsdat)
 summary(yt.lme)
 plot(yt~exp(fitted(yt.lme)), gsdat)
 gsdat$ysi <- as.factor(ifelse(exp(fitted(yt.lme, gsdat)) > gsdat$yt, "B", "A"))
 table(gsdat$ysi)
-boxplot(yt~yp, notch=T, gsdat)
-
-
-
+boxplot(yt~ysi, notch=T, gsdat)
 
