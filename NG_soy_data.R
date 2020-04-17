@@ -79,7 +79,8 @@ gsdat <- cbind(GID, gsdat)
 
 # Classify yield response propensities by conditional mean ----------------
 yt.lme <- lmer(log(yt)~log(yc)+(1|year)+(1|GID), data = gsdat)
-summary(yt.lme)
+summary(yt.lme) 
+gsdat$yte <- exp(fitted(yt.lme))
 par(pty="s")
 plot(yt~exp(fitted(yt.lme)), xlab="Expected yield (kg/ha)", ylab="Measured yield (kg/ha)", xlim = c(-5, 4505), ylim = c(-5, 4505), cex.lab=1.1, gsdat)
 abline(c(0,1), col="red", lwd=2)
