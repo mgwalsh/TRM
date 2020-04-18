@@ -102,6 +102,14 @@ sigrid <- extract(grids, sidat)
 sidat <- as.data.frame(cbind(sidat, sigrid))
 sidat <- sidat[complete.cases(sidat[,c(11:53)]),] ## removes incomplete cases
 
+# ECDF plot of treated soybean yields by site index categories
+soyA <- subset(sidat, sic=='A', select=yt) 
+soyB <- subset(sidat, sic=='B', select=yt) 
+plot(ecdf(soyA$yt), verticals=T, lty=1, lwd=1, col="dark green", do.points=F, main="",
+     xlab="Treated soybean yield (Mg/ha)", ylab="Cum. proportion of observations", cex.lab=1.2)
+plot(ecdf(soyB$yt), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
 write.csv(sidat, "./Results/NG_soy_si.csv", row.names = F)
