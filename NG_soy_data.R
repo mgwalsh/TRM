@@ -78,12 +78,12 @@ par(pty="s")
 plot(yt~exp(fitted(yt.lme)), xlab="Expected yield (kg/ha)", ylab="Measured yield (kg/ha)", xlim = c(-5, 4505), ylim = c(-5, 4505), cex.lab=1.1, gsdat)
 abline(c(0,1), col="red", lwd=2)
 
-# extract random effects and classify by site indices (si)
+# extract random effects and classify by grid ID (GID) site indices (si)
 si.ran <- ranef(yt.lme) ## extract random effects
 si <- as.data.frame(rownames(si.ran$GID))
 si$si <- si.ran$GID[,1]
 colnames(si) <- c("GID","si")
-si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A/B)
+si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below expected site indices (sic = A/B)
 tmp <- aggregate(.~GID, data = gsdat[, 8:14], mean)
 sidat <- merge(tmp, si, by="GID")
 
