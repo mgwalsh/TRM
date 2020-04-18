@@ -75,7 +75,7 @@ yt.lme <- lmer(log(yt)~log(yc)+(1|year)+(1|GID), data = gsdat) ## mixed effects 
 summary(yt.lme) 
 gsdat$eyt <- exp(fitted(yt.lme)) ## expected yield
 par(pty="s")
-plot(yt~exp(fitted(yt.lme)), xlab="Expected yield (kg/ha)", ylab="Measured yield (kg/ha)", xlim = c(-5, 4505), ylim = c(-5, 4505), cex.lab=1.1, gsdat)
+plot(yt~exp(fitted(yt.lme)), xlab="Expected yield (kg/ha)", ylab="Measured yield (kg/ha)", xlim = c(-5, 4505), ylim = c(-5, 4505), cex.lab=1.3, gsdat)
 abline(c(0,1), col="red", lwd=2)
 
 # extract random effects and classify by grid ID (GID) site indices (si)
