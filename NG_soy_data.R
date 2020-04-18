@@ -86,3 +86,30 @@ colnames(si) <- c("GID","si")
 si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A/B)
 tmp <- aggregate(.~GID, data = gsdat[, 8:14], mean)
 sidat <- merge(tmp, si, by="GID")
+
+# attach GADM-L2 admin unit names from shape
+coordinates(sidat) <- ~lon+lat
+projection(sidat) <- projection(shape)
+gadm <- sidat %over% shape
+sidat <- as.data.frame(sidat)
+sidat <- cbind(gadm[ ,c(5,7)], sidat)
+colnames(sidat) <- c("state","lga","GID","lon","lat","yc","yt","x","y","eyt","si","sic")
+
+# extract gridded variables at survey locations
+coordinates(sidat) <- ~x+y
+projection(sidat) <- projection(grids)
+sigrid <- extract(grids, sidat)
+sidat <- as.data.frame(cbind(sidat, sigrid))
+sidat <- sidat[complete.cases(sidat[,c(11:53)]),] ## removes incomplete cases
+
+# Write data frame --------------------------------------------------------
+dir.create("Results", showWarnings = F)
+write.csv(sidat, "./Results/NG_soy_si.csv", row.names = F)
+
+# Yield trial map widget -------------------------------------------------
+w <- leaflet() %>% 
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addCircleMarkers(sidat$lon, sidat$lat, clusterOptions = markerClusterOptions())
+w ## plot widget 
+saveWidget(w, 'NG_soy_si.html', selfcontained = T) ## save widget
+
