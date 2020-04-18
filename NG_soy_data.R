@@ -95,7 +95,7 @@ sidat <- as.data.frame(sidat)
 sidat <- cbind(gadm[ ,c(5,7)], sidat)
 colnames(sidat) <- c("state","lga","GID","lon","lat","yc","yt","x","y","eyt","si","sic")
 
-# extract gridded variables at survey locations
+# extract gridded variables at soybean trial locations
 coordinates(sidat) <- ~x+y
 projection(sidat) <- projection(grids)
 sigrid <- extract(grids, sidat)
@@ -106,7 +106,7 @@ sidat <- sidat[complete.cases(sidat[,c(11:53)]),] ## removes incomplete cases
 dir.create("Results", showWarnings = F)
 write.csv(sidat, "./Results/NG_soy_si.csv", row.names = F)
 
-# Yield trial map widget -------------------------------------------------
+# Yield trial location map widget -----------------------------------------
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addCircleMarkers(sidat$lon, sidat$lat, clusterOptions = markerClusterOptions())
