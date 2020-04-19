@@ -193,4 +193,13 @@ projection(sidat) <- projection(preds)
 sipre <- extract(preds, sidat)
 sidat <- as.data.frame(cbind(sidat, sipre))
 
+# ROC
+siA <- subset(sidat, sidat$sic=="A", select=c(st))
+siB <- subset(sidat, sidat$sic=="B", select=c(st))
+si_eval <- evaluate(p=siA[,1], a=siB[,1]) ## calculate ROC's on test set
+plot(si_eval, 'ROC') ## plot ROC curve
+t <- threshold(si_eval) ## calculate thresholds based on ROC
+sidat$sit <- ifelse(sidat$st > t[,1], "A", "B") ## classification threshold using kappa
+confusionMatrix(data = sidat$sit, reference = sidat$sic, positive = "A")
+
 
