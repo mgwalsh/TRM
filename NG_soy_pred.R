@@ -199,11 +199,9 @@ siB <- subset(sidat, sidat$sic=="B", select=c(st))
 si_eval <- evaluate(p=siA[,1], a=siB[,1]) ## calculate ROC's on test set
 plot(si_eval, 'ROC') ## plot the ROC curve
 t <- threshold(si_eval) ## calculate thresholds based on ROC
-sidat$sit <- ifelse(sidat$st > t[,1], "A", "B") ## classification threshold using kappa
+sidat$sit <- ifelse(sidat$st > t[,1], "A", "B") ## predicted classification threshold using kappa
 confusionMatrix(data = sidat$sit, reference = sidat$sic, positive = "A")
 
-# Write data frame --------------------------------------------------------
+# Write output data frame ---------------------------------------------------
 write.csv(sidat, "./results/NG_soy_si_pred.csv", row.names = F)
-
-
 
