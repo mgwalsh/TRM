@@ -202,4 +202,8 @@ t <- threshold(si_eval) ## calculate thresholds based on ROC
 sidat$sit <- ifelse(sidat$st > t[,1], "A", "B") ## classification threshold using kappa
 confusionMatrix(data = sidat$sit, reference = sidat$sic, positive = "A")
 
+# Write data frame --------------------------------------------------------
+write.csv(sidat, "./results/NG_soy_si_pred.csv", row.names = F)
+
+
 
