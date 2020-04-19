@@ -183,4 +183,14 @@ sipreds <- stack(gl.pred, rf.pred, gb.pred, nn.pred, st.pred)
 names(sipreds) <- c("gl","rf","gb","nn","st")
 writeRaster(sipreds, filename="./results/NG_soy_si_preds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
+# Receiver-Operator characteristics ---------------------------------------
+preds <- stack(gl.pred, rf.pred, gb.pred, nn.pred, st.pred)
+names(preds) <- c("gl","rf", "gb","nn","st")
+
+# extract model predictions
+coordinates(sidat) <- ~x+y
+projection(sidat) <- projection(preds)
+sipre <- extract(preds, sidat)
+sidat <- as.data.frame(cbind(sidat, sipre))
+
 
