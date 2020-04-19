@@ -105,9 +105,10 @@ sidat <- sidat[complete.cases(sidat[,c(11:53)]),] ## removes incomplete cases
 # ECDF plot of treated soybean yields by site index categories
 soyA <- subset(sidat, sic=='A', select=yt) 
 soyB <- subset(sidat, sic=='B', select=yt) 
-plot(ecdf(soyA$yt), verticals=T, lty=1, lwd=1, col="dark green", do.points=F, main="",
+plot(ecdf(soyA$yt), verticals=T, lty=1, lwd=2, col="dark green", do.points=F, main="",
      xlab="Treated soybean yield (kg/ha)", ylab="Cum. proportion of observations", cex.lab=1.2)
-plot(ecdf(soyB$yt), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
+plot(ecdf(soyB$yt), add=T, verticals=T, lty=1, lwd=2, col="red", do.points=F)
+plot(ecdf(sidat$yc), add=T, verticals=T, lty=1, lwd=2, col="black", do.points=F)
 abline(0.5,0, lty=1, col="grey")
 
 # Write data frame --------------------------------------------------------
