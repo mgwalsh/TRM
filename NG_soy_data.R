@@ -111,8 +111,8 @@ plot(ecdf(soyB$yt), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
 abline(0.5,0, lty=1, col="grey")
 
 # Write data frame --------------------------------------------------------
-dir.create("Results", showWarnings = F)
-write.csv(sidat, "./Results/NG_soy_si.csv", row.names = F)
+dir.create("results", showWarnings = F)
+write.csv(sidat, "./results/NG_soy_si.csv", row.names = F)
 
 # Yield trial location map widget -----------------------------------------
 w <- leaflet() %>% 
