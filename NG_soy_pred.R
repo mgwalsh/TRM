@@ -197,7 +197,7 @@ sidat <- as.data.frame(cbind(sidat, sipre))
 # ROC
 siA <- subset(sidat, sidat$sic=='A', select=st)
 siB <- subset(sidat, sidat$sic=='B', select=st)
-si_eval <- evaluate(p=siA[,1], a=siB[,1]) ## calculate ROC's on test set
+si_eval <- evaluate(p=siA[,1], a=siB[,1]) ## calculate ROC's on full dataset
 plot(si_eval, 'ROC') ## plot the ROC curve
 t <- threshold(si_eval) ## calculate thresholds based on ROC
 sidat$sit <- ifelse(sidat$st > t[,1], "A", "B") ## predicted classification threshold using kappa
