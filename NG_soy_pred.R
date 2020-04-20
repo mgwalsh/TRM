@@ -207,7 +207,7 @@ confusionMatrix(data = sidat$sit, reference = sidat$sic, positive = "A")
 soyA <- subset(sidat, sit=='A', select=c(yc,yt)) 
 soyB <- subset(sidat, sit=='B', select=c(yc,yt)) 
 plot(ecdf(soyA$yt-soyA$yc), verticals=T, lty=1, lwd=1, col="dark green", do.points=F, main="",
-     xlab="Soybean yield response (kg/ha)", ylab="Cum. proportion of observations", cex.lab=1.2)
+     xlab="Soybean yield response (kg/ha)", ylab="Cum. proportion of observations", xlim=c(-500,2500), cex.lab=1.2)
 plot(ecdf(soyB$yt-soyB$yc), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
 abline(0.5,0, lty=1, col="grey")
 
