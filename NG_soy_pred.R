@@ -204,11 +204,11 @@ sidat$sit <- ifelse(sidat$st > t[,1], "A", "B") ## predicted classification thre
 confusionMatrix(data = sidat$sit, reference = sidat$sic, positive = "A")
 
 # ECDF plot of soybean yield responses by modelled site index categories
-soyA <- subset(sidat, sit=='A', select=c(yc,yt)) ## above expected (A) sites
-soyB <- subset(sidat, sit=='B', select=c(yc,yt)) ## below expected (B) sites
+soyA <- subset(sidat, sit=='A', select=c(yc,yt)) ## predicted above expected (A) sites
+soyB <- subset(sidat, sit=='B', select=c(yc,yt)) ## predicted below expected (B) sites
 par(pty="s")
 plot(ecdf(soyA$yt-soyA$yc), verticals=T, lty=1, lwd=1, col="dark green", do.points=F, main="",
-     xlab="Soybean yield response (kg/ha)", ylab="Cum. proportion of observations", xlim=c(-500,2500), cex.lab=1.2)
+     xlab="Soybean yield response (kg/ha)", ylab="Cum. distribution of observations", xlim=c(-500,2500), cex.lab=1.2)
 plot(ecdf(soyB$yt-soyB$yc), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
 abline(0.5,0, lty=1, col="grey")
 
