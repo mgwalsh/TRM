@@ -203,6 +203,14 @@ t <- threshold(si_eval) ## calculate thresholds based on ROC
 sidat$sit <- ifelse(sidat$st > t[,1], "A", "B") ## predicted classification threshold using kappa
 confusionMatrix(data = sidat$sit, reference = sidat$sic, positive = "A")
 
+# ECDF plot of soybean yield responses by modelled site index categories
+soyA <- subset(sidat, sit=='A', select=c(yc,yt)) 
+soyB <- subset(sidat, sit=='B', select=c(yc,yt)) 
+plot(ecdf(soyA$yt-soyA$yc), verticals=T, lty=1, lwd=1, col="dark green", do.points=F, main="",
+     xlab="Soybean yield response (kg/ha)", ylab="Cum. proportion of observations", cex.lab=1.2)
+plot(ecdf(soyB$yt-soyB$yc), add=T, verticals=T, lty=1, lwd=1, col="red", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+
 # Write output data frame ---------------------------------------------------
 write.csv(sidat, "./results/NG_soy_si_pred.csv", row.names = F)
 
