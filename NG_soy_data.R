@@ -1,4 +1,4 @@
-# Soybean response trials and site indices, Central Nigeria
+# Site indices for soybean response trials, Central Nigeria
 # Yield response data courtesy of IITA
 # M. Walsh & J. van Heerwaarden, April 2020
 
@@ -87,7 +87,7 @@ si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below expected site indi
 tmp <- aggregate(.~GID, data = gsdat[, 8:14], mean)
 sidat <- merge(tmp, si, by="GID")
 
-# attach GADM-L2 admin unit names from shape
+# attach GADM-L2 admin unit names from shape (incase you want to do some small area estimates)
 coordinates(sidat) <- ~lon+lat
 projection(sidat) <- projection(shape)
 gadm <- sidat %over% shape
