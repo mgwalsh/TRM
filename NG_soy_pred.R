@@ -173,6 +173,7 @@ st <- train(gf_val, gl_val,
 
 # model outputs & predictions
 print(st)
+summary(st)
 plot(varImp(st))
 st.pred <- predict(preds, st, type = "prob") ## spatial predictions of soy site indices
 plot(st.pred, axes = F)
@@ -194,8 +195,8 @@ sipre <- extract(preds, sidat)
 sidat <- as.data.frame(cbind(sidat, sipre))
 
 # ROC
-siA <- subset(sidat, sidat$sic=="A", select=c(st))
-siB <- subset(sidat, sidat$sic=="B", select=c(st))
+siA <- subset(sidat, sidat$sic=='A', select=st)
+siB <- subset(sidat, sidat$sic=='B', select=st)
 si_eval <- evaluate(p=siA[,1], a=siB[,1]) ## calculate ROC's on test set
 plot(si_eval, 'ROC') ## plot the ROC curve
 t <- threshold(si_eval) ## calculate thresholds based on ROC
