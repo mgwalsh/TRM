@@ -93,9 +93,7 @@ boxplot(yield~qy, notch=T, gsdat)
 y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year), data = gsdat)
 display(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
-table(gsdat$my)
 boxplot(yield~my, notch=T, gsdat)
-table(gsdat$qy, gsdat$my)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
