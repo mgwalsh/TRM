@@ -32,8 +32,8 @@ unzip("KEN_adm3.zip", overwrite = T)
 shape <- shapefile("KEN_adm3.zip")
 
 # download raster stack
-download("https://www.dropbox.com/s/mz1t0zyq8uoqrhq/KE_250m_2017.zip?raw=1", "KE_250m_2017.zip", mode = "wb")
-unzip("KE_250m_2017.zip", overwrite = T)
+download("https://osf.io/4jvnu?raw=1", "KE_250m_2020.zip", mode = "wb")
+unzip("KE_250m_2020.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
 
