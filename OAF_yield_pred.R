@@ -198,23 +198,23 @@ tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-st <- train(fval, lval,
+si <- train(fval, lval,
             method = "glm",
             family = "binomial",
             metric = "ROC",
             trControl = tc)
 
 # model outputs & predictions
-summary(st)
-print(st)
-st.pred <- predict(preds, st, type = "prob") ## spatial predictions
-plot(st.pred, axes = F)
+summary(si)
+print(si)
+si.pred <- predict(preds, si, type = "prob") ## spatial predictions
+plot(si.pred, axes = F)
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_st.rds", sep = "")
-saveRDS(st, fname)
+fname <- paste("./Results/", labs, "_si.rds", sep = "")
+saveRDS(si, fname)
 
 # Receiver-operator characteristics ---------------------------------------
-cp_pre <- predict(st, fval, type="prob")
+cp_pre <- predict(si, fval, type="prob")
 cp_val <- cbind(lval, cp_pre)
 cpa <- subset(cp_val, cp_val=="A", select=c(A))
 cpb <- subset(cp_val, cp_val=="B", select=c(A))
@@ -228,8 +228,8 @@ mask <- reclassify(st.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
 
 # Write prediction grids --------------------------------------------------
-gspreds <- stack(preds, st.pred, mask)
-names(gspreds) <- c("gl1","gl2","rf","gb","nn","st","mk")
+gspreds <- stack(preds, si.pred, mask)
+names(gspreds) <- c("gl1","gl2","rf","gb","nn","si","mk")
 fname <- paste("./Results/","OAF_", labs, "_preds_2020.tif", sep = "")
 writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
