@@ -28,7 +28,7 @@ gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Site index calibration labels
-labs <- c("qy") ## insert other labels (my ...) here!
+labs <- c("qy") ## insert other labels (e.g. "my" ...) here!
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
@@ -238,7 +238,7 @@ coordinates(gsdat) <- ~x+y
 projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
-gsout$mzone <- ifelse(gsout$mk == 1, "A", "B")
-confusionMatrix(data = gsout$mzone, reference = gsout$qr)
+gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
+confusionMatrix(gsout$mzone, gsout$qy)
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
 write.csv(gsout, fname, row.names = F)
