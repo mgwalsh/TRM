@@ -242,3 +242,8 @@ gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
 confusionMatrix(gsout$mzone, gsout$qy)
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
 write.csv(gsout, fname, row.names = F)
+
+y.lme <- lmer(log(yield)~factor(trt)*si+(1|year)+(1|GID), data = gsout)
+display(y.lme)
+gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
+boxplot(yield~my, notch=T, gsdat)
