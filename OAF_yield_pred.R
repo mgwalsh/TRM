@@ -243,7 +243,6 @@ confusionMatrix(gsout$mzone, gsout$qy)
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
 write.csv(gsout, fname, row.names = F)
 
-y.lme <- lmer(log(yield)~factor(trt)*si+(1|year)+(1|GID), data = gsout)
-display(y.lme)
-gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
-boxplot(yield~my, notch=T, gsdat)
+# Maize yield estimates ---------------------------------------------------
+yld.lme <- lmer(log(yield)~factor(trt)*si+(1|year)+(1|GID), data = gsout)
+display(yld.lme)
