@@ -243,8 +243,10 @@ confusionMatrix(gsout$mzone, gsout$qy)
 
 # Maize yield estimates (t/ha) --------------------------------------------
 yld.lme <- lmer(log(yield)~factor(trt)*si+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsout)
-summary(yld.lme) ## mixed model results
+summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
+
+# Write output data frame -------------------------------------------------
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
 write.csv(gsout, fname, row.names = F)
 
