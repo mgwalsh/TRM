@@ -241,9 +241,9 @@ gsout <- as.data.frame(cbind(gsdat, gspre))
 gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
 confusionMatrix(gsout$mzone, gsout$qy)
 
-# Maize yield estimates ---------------------------------------------------
+# Maize yield estimates (t/ha) --------------------------------------------
 yld.lme <- lmer(log(yield)~factor(trt)*si+(1|year)+(1|GID), data = gsout)
-display(yld.lme)
+summary(yld.lme)
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
 write.csv(gsout, fname, row.names = F)
