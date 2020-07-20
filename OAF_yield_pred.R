@@ -256,7 +256,7 @@ print(stQ)
 curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=15, col="blue", lwd=1)
 curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=15, col="red", lwd=2)
 curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=15, col="blue", lwd=1)
-abline(c(0,1), col="grey", lwd=2)
+abline(c(0,1), col="grey", lwd=1)
 
 # Write output data frame -------------------------------------------------
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
