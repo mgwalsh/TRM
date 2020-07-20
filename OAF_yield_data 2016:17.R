@@ -1,6 +1,6 @@
 # OAF 2016/2017 Maize yield gap, Western Kenya data setup
 # Yield data courtesy of One Acre Fund.
-# M. Walsh, July 2018
+# M. Walsh, July 2020
 
 # Required packages
 # install.packages(c("downloader","rgdal","raster","quantreg","arm","leaflet","htmlwidgets")), dependencies=TRUE)
