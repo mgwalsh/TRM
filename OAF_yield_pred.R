@@ -233,7 +233,7 @@ names(gspreds) <- c("gl1","gl2","rf","gb","nn","si","mk")
 fname <- paste("./Results/","OAF_", labs, "_preds_2020.tif", sep = "")
 writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
-# Write output data frame -------------------------------------------------
+# Site index prediction check ---------------------------------------------
 coordinates(gsdat) <- ~x+y
 projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
