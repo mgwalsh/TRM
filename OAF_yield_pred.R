@@ -1,4 +1,4 @@
-# Stacked spatial predictions of 2016/2017 OAF maize site indices
+# Stacked spatial predictions of 2016/2017 OAF maize site indices & maize yields
 # M. Walsh, July 2020
 
 # Required packages
@@ -242,8 +242,8 @@ gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
 confusionMatrix(gsout$mzone, gsout$qy)
 
 # Maize yield estimates (t/ha) --------------------------------------------
-yld.lme <- lmer(log(yield)~factor(trt)*si+dap*can+(1|year)+(1|GID), data = gsout)
-display(yld.lme) ## mixed model results
+yld.lme <- lmer(log(yield)~factor(trt)*si+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsout)
+summary(yld.lme) ## mixed model results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
 write.csv(gsout, fname, row.names = F)
