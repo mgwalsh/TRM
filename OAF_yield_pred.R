@@ -241,10 +241,22 @@ gsout <- as.data.frame(cbind(gsdat, gspre))
 gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
 confusionMatrix(gsout$mzone, gsout$qy)
 
-# Maize yield estimates (t/ha) --------------------------------------------
+# Maize yield potentials (t/ha) ------------------------------------------
 yld.lme <- lmer(log(yield)~factor(trt)*si+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsout)
 summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
+
+# Quantile (uncertainty) plot
+par(pty="s")
+par(mfrow=c(1,1), mar=c(5,5,1,1))
+plot(yield~yldf, xlab="Maize yield prediction (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
+     xlim=c(-1,15), ylim=c(-1,15), gsout)
+stQ <- rq(yield~yldf, tau=c(0.05,0.5,0.95), data=gsout)
+print(stQ)
+curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=15, col="blue", lwd=1)
+curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=15, col="red", lwd=1)
+curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=15, col="blue", lwd=1)
+abline(c(0,1), col="grey", lwd=2)
 
 # Write output data frame -------------------------------------------------
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
