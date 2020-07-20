@@ -254,7 +254,7 @@ plot(yield~yldf, xlab="Maize yield prediction (t/ha)", ylab="Measured yield (t/h
 stQ <- rq(yield~yldf, tau=c(0.05,0.5,0.95), data=gsout)
 print(stQ)
 curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=15, col="blue", lwd=1)
-curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=15, col="red", lwd=1)
+curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=15, col="red", lwd=2)
 curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=15, col="blue", lwd=1)
 abline(c(0,1), col="grey", lwd=2)
 
