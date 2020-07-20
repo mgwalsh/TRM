@@ -246,3 +246,5 @@ write.csv(gsout, fname, row.names = F)
 # Maize yield estimates ---------------------------------------------------
 yld.lme <- lmer(log(yield)~factor(trt)*si+(1|year)+(1|GID), data = gsout)
 display(yld.lme)
+gsout$yldf <- exp(fitted(yld.lme, gsout))
+
