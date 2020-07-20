@@ -224,7 +224,7 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 # Generate feature mask ---------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
-mask <- reclassify(st.pred, r) ## reclassify stacked predictions
+mask <- reclassify(si.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
 
 # Write prediction grids --------------------------------------------------
