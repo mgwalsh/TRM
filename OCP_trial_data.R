@@ -65,7 +65,7 @@ si.ran <- ranef(si.lmer) ## extract random effects
 si <- as.data.frame(rownames(si.ran$sid))
 si$si <- si.ran$sid[,1]
 colnames(si) <- c("sid","si")
-si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A/B)
+si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A or B)
 gsdat <- merge(gsdat, si, by="sid")
 si <- merge(si, sites, by="sid")
 
