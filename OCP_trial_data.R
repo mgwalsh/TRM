@@ -70,11 +70,12 @@ gsdat <- merge(gsdat, si, by="sid")
 si <- merge(si, sites, by="sid")
 
 # Plots
-boxplot(tyld~trt, notch=T, ylab="Maize yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
-boxplot(tyld~sic, notch=T, ylab="Maize yield (kg/ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
+boxplot(tyld~trt, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(tyld~sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
 boxplot(tcob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
-boxplot(tyld~trt*sic, notch=T, ylab="Maize yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
-plot(tyld~cyld, xlab="Maize yield (kg/ha), circular plot", ylab="Maize yield (kg/ha), total plot", gsdat)
+boxplot(tyld~trt*sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
+plot(tyld~cyld, xlab="Maize grain yield (kg / ha), circular plot", ylab="Maize grain yield (kg / ha), total plot", gsdat)
+plot(tyld~ayld, xlab="Total Maize biomass (kg DM / ha)", ylab="Maize grain yield (kg / ha)", gsdat)
 
 # extract gridded variables at trial locations
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
