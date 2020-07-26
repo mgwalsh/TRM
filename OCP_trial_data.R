@@ -59,7 +59,7 @@ gsdat <- as.data.frame(cbind(tresp, trespgrid))
 # plot(alt~MDEM, gsdat) ## gps altitude/location check against MDEM 
 
 # Classify by site indices ------------------------------------------------
-si.lmer <- lmer(log(tyld)~trt*+(1|sid), gsdat) ## random intercept (site-level) model
+si.lmer <- lmer(log(tyld)~trt+(1|sid), gsdat) ## random intercept (site-level) model
 display(si.lmer)
 si.ran <- ranef(si.lmer) ## extract random effects
 si <- as.data.frame(rownames(si.ran$sid))
@@ -70,11 +70,11 @@ gsdat <- merge(gsdat, si, by="sid")
 si <- merge(si, sites, by="sid")
 
 # Plots
-boxplot(tyld~trt, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
-boxplot(tyld~sic, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
+boxplot(tyld~trt, notch=T, ylab="Maize yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(tyld~sic, notch=T, ylab="Maize yield (kg/ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
 boxplot(tcob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
-boxplot(tyld~trt*sic, notch=T, ylab="Cob yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
-plot(tyld~cyld, xlab="Cob yield (kg/ha), circular plot", ylab="Cob yield (kg/ha), total plot", gsdat)
+boxplot(tyld~trt*sic, notch=T, ylab="Maize yield (kg/ha)", ylim=c(0,8000), gsdat) ## treatment differences
+plot(tyld~cyld, xlab="Maize yield (kg/ha), circular plot", ylab="Maize yield (kg/ha), total plot", gsdat)
 
 # extract gridded variables at trial locations
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
