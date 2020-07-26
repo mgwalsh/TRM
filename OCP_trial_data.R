@@ -94,6 +94,7 @@ par(mfrow=c(1,1), mar=c(5,5,1,1))
 plot(tyld~cyld, xlab="Maize grain yield (kg / ha), circular plot", ylab="Maize grain yield (kg / ha), total plot", gsdat)
 plot(tyld~ayld, xlab="Maize biomass (kg DM / ha)", ylab="Maize grain yield (kg / ha)", gsdat)
 plot(hi~si, xlab="Site index", ylab="Harvest index", si)
+dev.off()
 
 # Extract gridded variables at trial locations ----------------------------
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
