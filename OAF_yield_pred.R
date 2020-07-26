@@ -246,7 +246,7 @@ yld.lme <- lmer(log(yield)~factor(trt)*si+I(dap/50)*I(can/50)+(1|year)+(1|GID), 
 summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 
-# Quantile (uncertainty) plot
+# Quantile regression (uncertainty) plot
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
 plot(yield~yldf, xlab="Maize yield prediction (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
