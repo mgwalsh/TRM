@@ -79,16 +79,22 @@ si$hic <- ifelse(si$hi > 0, "H", "L") ## classify above/below average harvest in
 gsdat <- merge(gsdat, si, by="sid")
 si <- merge(si, sites, by="sid")
 
-# Diagnostic plots
+# Diagnostic plots --------------------------------------------------------
 boxplot(tyld~trt, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
 boxplot(tyld~sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
 boxplot(tyld~hic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
 boxplot(tcob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
 boxplot(tyld~trt*sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
-plot(tyld~cyld, xlab="Maize grain yield (kg / ha), circular plot", ylab="Maize grain yield (kg / ha), total plot", gsdat)
-plot(tyld~ayld, xlab="Total Maize biomass (kg DM / ha)", ylab="Maize grain yield (kg / ha)", gsdat)
+boxplot(tyld~trt*hic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
 
-# extract gridded variables at trial locations
+# Yield component plots
+par(pty="s")
+par(mfrow=c(1,1), mar=c(5,5,1,1))
+plot(tyld~cyld, xlab="Maize grain yield (kg / ha), circular plot", ylab="Maize grain yield (kg / ha), total plot", gsdat)
+plot(tyld~ayld, xlab="Maize biomass (kg DM / ha)", ylab="Maize grain yield (kg / ha)", gsdat)
+plot(hi~si, xlab="Site index", ylab="Harvest index", si)
+
+# Extract gridded variables at trial locations ----------------------------
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(si.proj) <- c("x","y")
 si <- cbind(si, si.proj)
