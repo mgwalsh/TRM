@@ -83,6 +83,7 @@ si <- merge(si, sites, by="sid")
 boxplot(tyld~trt, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
 boxplot(tyld~sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
 boxplot(tyld~hic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
+boxplot(tyld~sic*hic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
 boxplot(tcob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
 boxplot(tyld~trt*sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
 boxplot(tyld~trt*hic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
