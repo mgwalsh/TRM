@@ -110,8 +110,8 @@ write.csv(sidat, "./Results/OCP_sidat.csv", row.names = F)
 
 # Yield trial map widget --------------------------------------------------
 w <- leaflet() %>% 
-  setView(lng = mean(si$lon), lat = mean(si$lat), zoom = 7) %>%
+  setView(lng = mean(sidat$lon), lat = mean(sidat$lat), zoom = 7) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-  addCircleMarkers(si$lon, si$lat, clusterOptions = markerClusterOptions())
+  addCircleMarkers(sidat$lon, sidat$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
 saveWidget(w, 'OCP_trials.html', selfcontained = T) ## save widget
