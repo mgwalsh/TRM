@@ -25,7 +25,7 @@ unzip("OCP_trials.zip", overwrite = T)
 sites <- read.table("sites.csv", header=T, sep=",")
 trial <- read.table("trials.csv", header=T, sep=",")
 tresp <- merge(sites, trial, by="sid")
-tresp <- tresp[complete.cases(tresp[ ,c(11:12)]),] ## removes incomplete cases
+tresp <- tresp[complete.cases(tresp[ ,c(11)]),] ## removes incomplete cases
 
 # download GADM-L2 shapefile (courtesy: http://www.gadm.org)
 download("https://www.dropbox.com/s/y3h6l7yu00orm78/NGA_adm2.zip?raw=1", "NGA_adm2.zip", mode = "wb")
@@ -68,33 +68,17 @@ si$si <- si.ran$sid[,1]
 colnames(si) <- c("sid","si")
 si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A or B)
 
-# Classify by harvest indices ---------------------------------------------
-gsdat$hi <- gsdat$tyld/gsdat$ayld ## grain yield / biomass
-hi.lmer <- lmer(hi~trt+(1|sid), gsdat) ## random intercept (site-level) model
-display(hi.lmer)
-hi.ran <- ranef(hi.lmer) ## extract random effects
-hi <- as.data.frame(rownames(hi.ran$sid))
-si$hi <- hi.ran$sid[,1]
-si$hic <- ifelse(si$hi > 0, "H", "L") ## classify above/below average harvest indices (hic = H or L)
-gsdat <- merge(gsdat, si, by="sid")
-si <- merge(si, sites, by="sid")
-
 # Diagnostic plots --------------------------------------------------------
 boxplot(tyld~trt, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
 boxplot(tyld~sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
-boxplot(tyld~hic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
-boxplot(tyld~sic*hic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
 boxplot(tcob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
 boxplot(tyld~trt*sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
 boxplot(tyld~trt*sic, notch=T, ylab="Maize grain yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
-boxplot(ayld~trt*hic, notch=T, ylab="Maize biomass (kg / ha)", ylim=c(0,12000), gsdat) ## treatment differences
 
 # Yield component plots
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
 plot(tyld~cyld, xlab="Maize grain yield (kg / ha), circular plot", ylab="Maize grain yield (kg / ha), total plot", gsdat)
-plot(tyld~ayld, xlab="Maize biomass (kg DM / ha)", ylab="Maize grain yield (kg / ha)", gsdat)
-plot(hi~si, xlab="Site index", ylab="Harvest index", si)
 dev.off()
 
 # Extract gridded variables at trial locations ----------------------------
