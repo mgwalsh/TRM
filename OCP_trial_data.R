@@ -71,7 +71,7 @@ si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indic
 # Model fit
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
-plot(tyld~exp(fitted(si.lmer)), xlab="Fitted Maize yield (kg / ha)", ylab="Maize yield (kg / ha)", xlim=c(0,8000), ylim=c(0,8000), gsdat) ## model fit to the data
+plot(cyld~exp(fitted(si.lmer)), xlab="Fitted Maize yield (kg / ha)", ylab="Maize yield (kg / ha)", xlim=c(0,8000), ylim=c(0,8000), gsdat) ## model fit to the data
 abline(c(0,1))
 dev.off()
 
