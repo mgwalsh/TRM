@@ -25,7 +25,7 @@ unzip("OCP_trials.zip", overwrite = T)
 sites <- read.table("sites.csv", header=T, sep=",")
 trial <- read.table("trials.csv", header=T, sep=",")
 tresp <- merge(sites, trial, by="sid")
-tresp <- tresp[complete.cases(tresp[ ,c(11)]),] ## removes incomplete cases
+tresp <- tresp[complete.cases(tresp[ ,c(10)]),] ## removes incomplete cases
 
 # download GADM-L2 shapefile (courtesy: http://www.gadm.org)
 download("https://www.dropbox.com/s/y3h6l7yu00orm78/NGA_adm2.zip?raw=1", "NGA_adm2.zip", mode = "wb")
@@ -60,26 +60,28 @@ gsdat <- as.data.frame(cbind(tresp, trespgrid))
 # plot(alt~MDEM, gsdat) ## gps altitude/location check against MDEM 
 
 # Classify by site indices ------------------------------------------------
-si.lmer <- lmer(log(tyld)~trt+(1|sid), gsdat) ## random intercept (site-level) model
+si.lmer <- lmer(log(cyld)~trt+(1|sid), gsdat) ## random intercept (site-level) model
 display(si.lmer)
 si.ran <- ranef(si.lmer) ## extract random effects
 si <- as.data.frame(rownames(si.ran$sid))
 si$si <- si.ran$sid[,1]
 colnames(si) <- c("sid","si")
 si$sic <- ifelse(si$si > 0, "A", "B") ## classify above/below average site indices (sic = A or B)
+si <- merge(sites, si, by="sid")
+gsdat <- merge(gsdat, si, by="sid")
 
 # Model fit
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
-plot(cyld~exp(fitted(si.lmer)), xlab="Fitted Maize yield (kg / ha)", ylab="Maize yield (kg / ha)", xlim=c(0,8000), ylim=c(0,8000), gsdat) ## model fit to the data
+plot(cyld~exp(fitted(si.lmer)), xlab="Fitted Maize yield (kg / ha)", ylab="Maize yield (kg / ha)", xlim=c(0,10000), ylim=c(0,10000), gsdat) ## model fit to the data
 abline(c(0,1))
 dev.off()
 
 # Diagnostic plots --------------------------------------------------------
-boxplot(tyld~trt, notch=T, ylab="Maize yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
-boxplot(tyld~sic, notch=T, ylab="Maize yield (kg / ha)", ylim=c(0,8000), gsdat) ## yield differences between site index classes
-boxplot(tcob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,800), gsdat) ## treatment differences
-boxplot(tyld~trt*sic, notch=T, ylab="Maize yield (kg / ha)", ylim=c(0,8000), gsdat) ## treatment differences
+boxplot(cyld~trt, notch=T, ylab="Maize yield (kg / ha)", ylim=c(0,10000), gsdat) ## treatment differences
+boxplot(cyld~sic, notch=T, ylab="Maize yield (kg / ha)", ylim=c(0,10000), gsdat) ## yield differences between site index classes
+boxplot(ccob~trt*sic, notch=T, ylab="Number of cobs", ylim=c(0,140), gsdat) ## treatment differences
+boxplot(cyld~trt*sic, notch=T, ylab="Maize yield (kg / ha)", ylim=c(0,10000), gsdat) ## treatment differences
 
 # Extract gridded variables at trial locations ----------------------------
 si.proj <- as.data.frame(project(cbind(si$lon, si$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
