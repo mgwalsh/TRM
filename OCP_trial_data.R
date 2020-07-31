@@ -15,8 +15,10 @@ suppressPackageStartupMessages({
 })
 
 # Create a data folder in your current working directory
-dir.create("OCP_data", showWarnings=F)
+if(!dir.exists("./OCP_data")) dir.create("./OCP_data")
 setwd("./OCP_data")
+dir.create("Results", showWarnings = F)
+rm(list = ls()) ## scrub extraneous objects in memory
 
 # Data downloads -----------------------------------------------------------
 # download IITA/OCP yield data
