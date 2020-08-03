@@ -22,6 +22,11 @@ suppressPackageStartupMessages({
 # source_url(SourceURL)
 rm(list=setdiff(ls(), c("sidat","grids","glist"))) ## scrub extraneous objects in memory
 
+# crop ROI extent
+ext <- c(-1600250,-910500,362000,750000)
+bb <- extent(ext)
+grids <- crop(grids, bb)
+
 # set calibration/validation set randomization seed
 seed <- 12358
 set.seed(seed)
