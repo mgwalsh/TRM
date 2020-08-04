@@ -35,8 +35,8 @@ unzip("NGA_adm2.zip", overwrite = T)
 shape <- shapefile("NGA_adm2.shp")
 
 # download raster stack (note this is a big 800+ Mb download)
-download("https://www.dropbox.com/s/u5fyjbujf0d7q43/NG_250m_2017.zip?raw=1", "NG_250m_2017.zip", mode = "wb")
-unzip("NG_250m_2017.zip", overwrite = T)
+download("https://osf.io/67fqw?raw=1", "NG_250m_2020.zip", mode = "wb")
+unzip("NG_250m_2020.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
 
