@@ -1,6 +1,6 @@
 # OCP/IITA 2017 Maize fertilizer response trials, Central Nigeria
 # Yield response data courtesy of IITA
-# M. Walsh & J. Huising, July 2018
+# M. Walsh & J. Huising, July 2018 (2020 update)
 
 # Required packages
 # install.packages(c("downloader","rgdal","raster","arm","leaflet","htmlwidgets")), dependencies=TRUE)
@@ -34,7 +34,7 @@ download("https://www.dropbox.com/s/y3h6l7yu00orm78/NGA_adm2.zip?raw=1", "NGA_ad
 unzip("NGA_adm2.zip", overwrite = T)
 shape <- shapefile("NGA_adm2.shp")
 
-# download raster stack (note this is a big 800+ Mb download)
+# download raster stack (note this is a big 1+ Gb download)
 download("https://osf.io/67fqw?raw=1", "NG_250m_2020.zip", mode = "wb")
 unzip("NG_250m_2020.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
