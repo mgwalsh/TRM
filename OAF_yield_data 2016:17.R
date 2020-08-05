@@ -69,7 +69,7 @@ gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]),] ## removes incomplete case
 gsdat <- gsdat[which(gsdat$can < 100 & gsdat$dap < 100), ] ## removes outlier fertilizer treatments
 gsdat <- gsdat[which(gsdat$fsize > 0), ] ## removes field size = 0
 
-# Define unique grid ID's (GID), 'management units'
+# Define unique grid ID's (GID)
 # Specify pixel scale (res.pixel, in m)
 res.pixel <- 10000
 
@@ -89,11 +89,14 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
 table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
-# similar classification as the previous, but with year & GID as a random effects
-y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year)+(1|GID), data = gsdat)
-display(y.lme)
+# similar classification as the previous, but with year & location as random effects
+y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year)+(1|location), data = gsdat)
+summary(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
 boxplot(yield~my, notch=T, gsdat)
+
+# cross-classification by model
+table(gsdat$qy, gsdat$my)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
