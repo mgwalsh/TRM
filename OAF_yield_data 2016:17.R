@@ -89,8 +89,8 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
 table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
-# similar classification as the previous, but with year & location as random effects
-y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year)+(1|location), data = gsdat)
+# similar classification as the previous, but with year & grid ID as random effects
+y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year)+(1|GID), data = gsdat)
 summary(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
 boxplot(yield~my, notch=T, gsdat)
