@@ -71,7 +71,7 @@ gsdat <- gsdat[which(gsdat$fsize > 0), ] ## removes field size = 0
 
 # Define unique grid ID's (GID)
 # Specify pixel scale (res.pixel, in m)
-res.pixel <- 10000
+res.pixel <- 1000
 
 # Grid ID (GID) definition
 xgid <- ceiling(abs(gsdat$x)/res.pixel)
