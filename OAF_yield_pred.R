@@ -1,4 +1,4 @@
-# Stacked spatial predictions of 2016/2017 OAF maize yield site indices
+# Stacked spatial predictions of 2016/2017 OAF maize yield site indices & yield potentials
 # M. Walsh, July 2020
 
 # Required packages
