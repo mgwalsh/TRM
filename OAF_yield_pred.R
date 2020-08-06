@@ -29,11 +29,11 @@ gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Site index calibration labels
-labs <- c("my") ## insert other labels (e.g. "qy" ...) here!
+labs <- c("qy") ## insert other labels (e.g. "my" ...) here!
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
-fcal <- gs_cal[,14:59]
+fcal <- gs_cal[,14:32,36:59]
 
 # Spatial trend model <mgcv> -----------------------------------------------
 # select central place covariates
@@ -65,7 +65,7 @@ saveRDS(gm, fname)
 
 # Central place theory model <glm> -----------------------------------------
 # select central place covariates
-gf_cpv <- gs_cal[,21:35]
+gf_cpv <- gs_cal[,21:32]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
