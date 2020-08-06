@@ -95,7 +95,7 @@ summary(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
 boxplot(yield~my, notch=T, gsdat)
 
-# cross-classification by model
+# cross-classification by modeled classifications
 table(gsdat$qy, gsdat$my)
 
 # Write data frame --------------------------------------------------------
