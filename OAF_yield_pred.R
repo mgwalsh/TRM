@@ -32,7 +32,35 @@ labs <- c("qy") ## insert other labels (e.g. "my" ...) here!
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
-fcal <- gs_cal[,14:53]
+fcal <- gs_cal[,14:59]
+
+# Spatial trend model <mgcv> -----------------------------------------------
+# select central place covariates
+gf_cpv <- gs_cal[,33:35]
+
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T, 
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+gm <- train(gf_cpv, lcal, 
+            method = "gam",
+            preProc = c("center","scale"), 
+            family = "binomial",
+            metric = "ROC",
+            trControl = tc)
+
+# model outputs & predictions
+summary(gm)
+gm.pred <- predict(grids, gm, type = "prob") ## spatial predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_gm.rds", sep = "")
+saveRDS(gm, fname)
 
 # Central place theory model <glm> -----------------------------------------
 # select central place covariates
