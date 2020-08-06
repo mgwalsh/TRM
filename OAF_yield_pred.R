@@ -268,7 +268,7 @@ projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
-confusionMatrix(gsout$mzone, gsout$my )
+confusionMatrix(gsout$mzone, gsout$qy )
 
 # Maize yield potentials (t/ha) ------------------------------------------
 yld.lme <- lmer(log(yield)~factor(trt)*si+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsout)
