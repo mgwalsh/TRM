@@ -2,10 +2,11 @@
 # M. Walsh, July 2020
 
 # Required packages
-# install.packages(c("devtools","caret","MASS","randomForest","gbm","nnet","plyr","doParallel","dismo")), dependencies=T)
+# install.packages(c("devtools","caret","mgcv","MASS","randomForest","gbm","nnet","plyr","doParallel","dismo")), dependencies=T)
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
+  require(mgcv)
   require(MASS)
   require(randomForest)
   require(gbm)
@@ -28,7 +29,7 @@ gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Site index calibration labels
-labs <- c("qy") ## insert other labels (e.g. "my" ...) here!
+labs <- c("my") ## insert other labels (e.g. "qy" ...) here!
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
@@ -64,7 +65,7 @@ saveRDS(gm, fname)
 
 # Central place theory model <glm> -----------------------------------------
 # select central place covariates
-gf_cpv <- gs_cal[,21:29]
+gf_cpv <- gs_cal[,21:35]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -200,8 +201,8 @@ fname <- paste("./Results/", labs, "_nn.rds", sep = "")
 saveRDS(nn, fname)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
-names(preds) <- c("gl1","gl2","rf","gb","nn")
+preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
+names(preds) <- c("gm","gl1","gl2","rf","gb","nn")
 plot(preds, axes = F)
 
 # extract model predictions
@@ -213,7 +214,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 # stacking model validation labels and features
 gs_val <- as.data.frame(gs_val)
 lval <- as.vector(t(gs_val[labs]))
-fval <- gspred[,56:60] ## subset validation features
+fval <- gspred[,62:67] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -257,7 +258,7 @@ plot(mask, axes=F)
 
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, si.pred, mask)
-names(gspreds) <- c("gl1","gl2","rf","gb","nn","si","mk")
+names(gspreds) <- c("gm","gl1","gl2","rf","gb","nn","si","mk")
 fname <- paste("./Results/","OAF_", labs, "_preds_2020.tif", sep = "")
 writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
@@ -267,7 +268,7 @@ projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
-confusionMatrix(gsout$mzone, gsout$qy)
+confusionMatrix(gsout$mzone, gsout$my )
 
 # Maize yield potentials (t/ha) ------------------------------------------
 yld.lme <- lmer(log(yield)~factor(trt)*si+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsout)
