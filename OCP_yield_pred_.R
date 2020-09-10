@@ -42,10 +42,10 @@ labs <- c("sic") ## A = 'above average', B = below average site indices
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
-fcal <- gs_cal[,7:55]
+fcal <- gs_cal[,7:28,32:55]
 
 # Spatial trend model <mgcv> -----------------------------------------------
-# select central place covariates
+# select x,y location grids
 gf_cpv <- gs_cal[,29:31]
 
 # start doParallel to parallelize model fitting
@@ -74,7 +74,7 @@ saveRDS(gm, fname)
 
 # Central place theory model <MASS> ---------------------------------------
 # select central place covariates
-gf_cpv <- gs_cal[,15:31]
+gf_cpv <- gs_cal[,15:28]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
