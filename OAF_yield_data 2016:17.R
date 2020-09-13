@@ -90,8 +90,8 @@ table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
 # similar classification as the previous, but with year & grid ID (GID) as random effects
-y.lme <- lmer(log(yield)~factor(trt)+dap*can+(1|year)+(1|GID), data = gsdat) ## this is a geographic case-control model
-summary(y.lme)
+y.lme <- lmer(log(yield)~factor(trt)+fsize+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsdat) ## this is a geographic case-control model
+display(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
 boxplot(yield~my, notch=T, gsdat)
 
