@@ -81,9 +81,9 @@ gidy <- ifelse(gsdat$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 gsdat <- cbind(GID, gsdat)
 
-# Classify yield propensities by conditional quantile ---------------------
+# Classify yield gaps by conditional quantile -----------------------------
 # this is the conditional yield gap based on the current data at median values
-qy.rq <- rq(log(yield)~factor(year)+factor(trt)+dap*can, tau = 0.5, data = gsdat) ## try quantiles other than the median
+qy.rq <- rq(log(yield)~factor(year)+factor(trt)+fsize+I(dap/50)*I(can/50), tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 table(gsdat$qy)
