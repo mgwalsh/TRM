@@ -269,7 +269,7 @@ gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
 confusionMatrix(gsout$mzone, gsout$qy) ## overall prediction accuracy stats
-boxplot(yield~trt+mzone, notch=T, xlab="Management zone", ylab="Measured yield (t/ha)",
+boxplot(yield~mzone, notch=T, xlab="Management zone", ylab="Measured yield (t/ha)",
         cex.lab=1.3, gsout) ## yield differences between predicted site index zones
 
 # Maize yield potentials (t/ha) ------------------------------------------
