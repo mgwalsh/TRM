@@ -76,7 +76,7 @@ gsdat <- merge(gsdat, si, by="sid")
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
 plot(cyld~exp(fitted(si.lmer)), xlab="Predicted yield (kg / ha)", ylab="Measured yield (kg / ha)", xlim=c(0,10000), ylim=c(0,10000), gsdat) ## model fit to the data
-abline(c(0,1))
+abline(c(0,1), col="red")
 dev.off()
 
 # Diagnostic plots --------------------------------------------------------
