@@ -1,4 +1,4 @@
-# OAF 2016/2017 Maize yield gap, Western Kenya data setup
+# OAF 2016/2017 Maize yields, Western Kenya data setup
 # Yield data courtesy of One Acre Fund.
 # M. Walsh, July 2020
 
