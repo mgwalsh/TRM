@@ -21,10 +21,10 @@ dir.create("OAF_data", showWarnings=F)
 setwd("./OAF_data")
 
 # download OAF yield data
-download("https://www.dropbox.com/s/666errqdga3cqrh/oafyga.csv.zip?raw=1", "oafyga.csv.zip", mode = "wb")
-unzip("oafyga.csv.zip", overwrite = T)
-yield <- read.table("oafyga.csv", header = T, sep = ",")
-yield <- yield[!duplicated(yield), ] ## removes duplicates
+download("https://www.dropbox.com/s/lhniws8prfvjw9r/OAF_yield_data.csv.zi?raw=1", "OAF_yield_data.csv.zip", mode = "wb")
+unzip("OAF_yield_data.csv.zip", overwrite = T)
+yield <- read.table("OAF_yield_data.csv", header = T, sep = ",")
+# yield <- yield[!duplicated(yield), ] ## removes duplicates if needed
 
 # download GADM-L3 shapefile (@ http://www.gadm.org)
 download("https://www.dropbox.com/s/otspr9b9jtuyneh/KEN_adm3.zip?raw=1", "KEN_adm3.zip", mode = "wb")
@@ -82,15 +82,15 @@ GID <- paste(gidx, gidy, sep="-")
 gsdat <- cbind(GID, gsdat)
 
 # Classify yield gaps by conditional quantile -----------------------------
-# this is the conditional yield gap based on the current data at median values
-qy.rq <- rq(log(yield)~factor(year)+factor(trt)+fsize+I(dap/50)*I(can/50), tau = 0.5, data = gsdat) ## try quantiles other than the median
+# this is the production function at median values
+qy.rq <- rq(log(yield)~log(year+1)+log(trt+1)+log(dap+1)+log(can+1), tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
 # similar classification as the previous, but with year & grid ID (GID) as random effects
-y.lme <- lmer(log(yield)~factor(trt)+fsize+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsdat) ## this is a geographic case-control model
+y.lme <- lmer(log(yield)~log(trt+1)+log(dap+1)+log(can+1)+(1|year)+(1|GID), data = gsdat) ## this is a geographic case-control model
 display(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
 boxplot(yield~my, notch=T, gsdat)
@@ -107,6 +107,6 @@ w <- leaflet() %>%
   setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 8) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
-w ## plot widget 
 saveWidget(w, 'OAF_yield_survey.html', selfcontained = T) ## save widget
+w ## plot widget 
 
