@@ -36,7 +36,7 @@ lcal <- as.vector(t(gs_cal[labs]))
 fcal <- gs_cal[,14:32,36:59]
 
 # Spatial trend model <mgcv> -----------------------------------------------
-# select central place covariates
+# select spatial coordinates
 gf_cpv <- gs_cal[,33:35]
 
 # start doParallel to parallelize model fitting
@@ -228,7 +228,7 @@ tc <- trainControl(method = "cv", classProbs = T,
 
 # model training
 si <- train(fval, lval,
-            method = "glm",
+            method = "glmStepAIC",
             family = "binomial",
             metric = "ROC",
             trControl = tc)
@@ -254,7 +254,6 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
 mask <- reclassify(si.pred, r) ## reclassify stacked predictions
-plot(mask, axes=F)
 
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, si.pred, mask)
@@ -273,14 +272,14 @@ boxplot(yield~mzone, notch=T, xlab="Management zone", ylab="Measured yield (t/ha
         cex.lab=1.3, gsout) ## yield differences between predicted site index zones
 
 # Maize yield potentials (t/ha) ------------------------------------------
-yld.lme <- lmer(log(yield)~factor(trt)*si+I(dap/50)*I(can/50)+(1|year)+(1|GID), data = gsout)
+yld.lme <- lmer(log(yield)~log(trt+1)*log(si+1)+log(can+1)+log(dap+1)+(1|year)+(1|division), data = gsout)
 summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 
 # Quantile regression (uncertainty) plot
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
-plot(yield~yldf, xlab="Maize yield prediction (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
+plot(yield~yldf, xlab="Maize production function (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
      xlim=c(-1,15), ylim=c(-1,15), gsout)
 stQ <- rq(yield~yldf, tau=c(0.05,0.5,0.95), data=gsout)
 print(stQ)
