@@ -81,22 +81,13 @@ gidy <- ifelse(gsdat$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 gsdat <- cbind(GID, gsdat)
 
-# Fit production functions ------------------------------------------------
+# Fit production function -------------------------------------------------
 # this is the production function at median values
 qy.rq <- rq(log(yield)~log(year+1)+log(trt+1)+log(dap+1)+log(can+1), tau = 0.5, data = gsdat) ## try quantiles other than the median
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
 table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
-
-# similar classification as the previous, but with year and admin locations as random effects
-y.lme <- lmer(log(yield)~log(trt+1)+log(dap+1)+log(can+1)+(1|year)+(1|division), data = gsdat) ## this is a multilevel model
-summary(y.lme)
-gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
-boxplot(yield~my, notch=T, gsdat)
-
-# cross-classification by modeled classifications
-table(gsdat$qy, gsdat$my)
 
 # Write data frame --------------------------------------------------------
 dir.create("Results", showWarnings = F)
