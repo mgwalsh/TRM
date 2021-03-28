@@ -279,7 +279,7 @@ gsout$yldf <- exp(fitted(yld.lme, gsout))
 # Quantile regression (uncertainty) plot
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
-plot(yield~yldf, xlab="Maize production function (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
+plot(yield~yldf, xlab="Production function (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
      xlim=c(-1,15), ylim=c(-1,15), gsout)
 stQ <- rq(yield~yldf, tau=c(0.05,0.5,0.95), data=gsout)
 print(stQ)
