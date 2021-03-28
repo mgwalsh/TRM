@@ -24,6 +24,7 @@ setwd("./OAF_data")
 download("https://www.dropbox.com/s/lhniws8prfvjw9r/OAF_yield_data.csv.zi?raw=1", "OAF_yield_data.csv.zip", mode = "wb")
 unzip("OAF_yield_data.csv.zip", overwrite = T)
 yield <- read.table("OAF_yield_data.csv", header = T, sep = ",")
+yield$trt <- ifelse(yield$trt == 1, "oaf", "control")
 # yield <- yield[!duplicated(yield), ] ## removes duplicates if needed
 
 # download GADM-L3 shapefile (@ http://www.gadm.org)
@@ -82,10 +83,10 @@ GID <- paste(gidx, gidy, sep="-")
 gsdat <- cbind(GID, gsdat)
 
 # Fit production function -------------------------------------------------
-# this is the production function at median values
-qy.rq <- rq(log(yield)~log(year+1)+log(trt+1)+log(dap+1)+log(can+1), tau = 0.5, data = gsdat) ## try quantiles other than the median
+# this is the production function using quantile regression
+qy.rq <- rq(log(yield)~year+factor(trt)+log(dap+1)*log(can+1), tau = 0.5, data = gsdat)
 summary(qy.rq)
-gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A"))
+gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")) ## classify site index zones
 table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
