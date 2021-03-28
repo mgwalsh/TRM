@@ -90,8 +90,8 @@ table(gsdat$qy)
 boxplot(yield~qy, notch=T, gsdat)
 
 # similar classification as the previous, but with year and admin locations as random effects
-y.lme <- lmer(log(yield)~log(trt+1)+log(dap+1)+log(can+1)+(1|year)+(1|location), data = gsdat) ## this is a multilevel model
-display(y.lme)
+y.lme <- lmer(log(yield)~log(trt+1)+log(dap+1)+log(can+1)+(1|year)+(1|division), data = gsdat) ## this is a multilevel model
+summary(y.lme)
 gsdat$my <- as.factor(ifelse(exp(fitted(y.lme, gsdat)) > gsdat$yield, "B", "A"))
 boxplot(yield~my, notch=T, gsdat)
 
