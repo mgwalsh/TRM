@@ -29,7 +29,7 @@ gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Site index calibration labels
-labs <- c("qy") ## insert other labels (e.g. "my" ...) here!
+labs <- c("qy")
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
@@ -268,11 +268,11 @@ gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
 confusionMatrix(gsout$mzone, gsout$qy) ## overall prediction accuracy stats
-boxplot(yield~mzone, notch=T, xlab="Management zone", ylab="Measured yield (t/ha)",
+boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
         cex.lab=1.3, gsout) ## yield differences between predicted site index zones
 
 # Maize yield potentials (t/ha) ------------------------------------------
-yld.lme <- lmer(log(yield)~log(trt+1)*log(si+1)+log(can+1)+log(dap+1)+(1|year)+(1|division), data = gsout)
+yld.lme <- lmer(log(yield)~factor(trt)*log(si+1)+log(can+1)*log(dap+1)+(1|year)+(1|division), data = gsout)
 summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 
