@@ -272,7 +272,7 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
         cex.lab=1.3, gsout) ## yield differences between predicted site index zones
 
 # Maize yield potentials (t/ha) ------------------------------------------
-yld.lme <- lmer(log(yield)~factor(trt)*log(si+1)+log(can+1)*log(dap+1)+(1|year)+(1|division), data = gsout)
+yld.lme <- lmer(log(yield)~factor(trt)*log(si+1)+log(can+1)*log(dap+1)+(1|year)+(1|GID), data = gsout)
 summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 
