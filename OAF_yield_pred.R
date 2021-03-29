@@ -60,6 +60,7 @@ gm <- train(gf_cpv, lcal,
 summary(gm)
 gm.pred <- predict(grids, gm, type = "prob") ## spatial predictions
 stopCluster(mc)
+# plot(gm.pred, axes=F) ## plot of the spatial prediction
 fname <- paste("./Results/", labs, "_gm.rds", sep = "")
 saveRDS(gm, fname)
 
@@ -89,6 +90,7 @@ summary(gl1)
 print(gl1) ## ROC's accross cross-validation
 gl1.pred <- predict(grids, gl1, type = "prob") ## spatial predictions
 stopCluster(mc)
+# plot(gl1.pred, axes=F)
 fname <- paste("./Results/", labs, "_gl1.rds", sep = "")
 saveRDS(gl1, fname)
 
@@ -115,6 +117,7 @@ summary(gl2)
 print(gl2) ## ROC's accross cross-validation
 gl2.pred <- predict(grids, gl2, type = "prob") ## spatial predictions
 stopCluster(mc)
+# plot(gl2.pred, axes=F)
 fname <- paste("./Results/", labs, "_gl2.rds", sep = "")
 saveRDS(gl2, fname)
 
@@ -142,6 +145,7 @@ rf <- train(fcal, lcal,
 print(rf) ## ROC's accross tuning parameters
 rf.pred <- predict(grids, rf, type = "prob") ## spatial predictions
 stopCluster(mc)
+# plot(rf.pred, axes=F)
 fname <- paste("./Results/", labs, "_rf.rds", sep = "")
 saveRDS(rf, fname)
 
@@ -171,6 +175,7 @@ gb <- train(fcal, lcal,
 print(gb) ## ROC's accross tuning parameters
 gb.pred <- predict(grids, gb, type = "prob") ## spatial predictions
 stopCluster(mc)
+# plot(gb.pred, axes=F)
 fname <- paste("./Results/", labs, "_gb.rds", sep = "")
 saveRDS(gb, fname)
 
@@ -197,13 +202,14 @@ nn <- train(fcal, lcal,
 print(nn) ## ROC's accross tuning parameters
 nn.pred <- predict(grids, nn, type = "prob") ## spatial predictions
 stopCluster(mc)
+# plot(nn.pred, axes=F)
 fname <- paste("./Results/", labs, "_nn.rds", sep = "")
 saveRDS(nn, fname)
 
 # Model stacking setup ----------------------------------------------------
 preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
 names(preds) <- c("gm","gl1","gl2","rf","gb","nn")
-plot(preds, axes = F)
+# plot(preds, axes = F)
 
 # extract model predictions
 coordinates(gs_val) <- ~x+y
@@ -272,7 +278,7 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
         cex.lab=1.3, gsout) ## yield differences between predicted site index zones
 
 # Maize yield potentials (t/ha) ------------------------------------------
-yld.lme <- lmer(log(yield)~factor(trt)*log(si+1)+log(can+1)*log(dap+1)+(1|year)+(1|GID), data = gsout)
+yld.lme <- lmer(log(yield)~factor(trt)*log(si+1)+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
 summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 
@@ -280,12 +286,12 @@ gsout$yldf <- exp(fitted(yld.lme, gsout))
 par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
 plot(yield~yldf, xlab="Production function (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
-     xlim=c(-1,15), ylim=c(-1,15), gsout)
-stQ <- rq(yield~yldf, tau=c(0.05,0.5,0.95), data=gsout)
+     xlim=c(0,8), ylim=c(0,8), gsout)
+stQ <- rq(yield~yldf, tau=c(0.025,0.5,0.975), data=gsout)
 print(stQ)
-curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=15, col="blue", lwd=2)
-curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=15, col="red", lwd=2)
-curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=15, col="blue", lwd=2)
+curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=8, col="blue", lwd=2)
+curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=8, col="red", lwd=2)
+curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue", lwd=2)
 abline(c(0,1), col="grey", lwd=1)
 
 # Write output data frame -------------------------------------------------
