@@ -69,21 +69,12 @@ gsdat <- as.data.frame(cbind(yield, yieldgrid))
 gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]),] ## removes incomplete cases
 gsdat <- gsdat[which(gsdat$can < 100 & gsdat$dap < 100), ] ## removes outlier fertilizer treatments
 gsdat <- gsdat[which(gsdat$fsize > 0), ] ## removes field size = 0
-
-# Define unique grid ID's (GID)
-# Specify pixel scale (res.pixel, in m)
-res.pixel <- 10000
-
-# Grid ID (GID) definition
-xgid <- ceiling(abs(gsdat$x)/res.pixel)
-ygid <- ceiling(abs(gsdat$y)/res.pixel)
-gidx <- ifelse(gsdat$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
-gidy <- ifelse(gsdat$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
-GID <- paste(gidx, gidy, sep="-")
-gsdat <- cbind(GID, gsdat)
+quant <- quantile(gsdat$yield, probs=c(0.025,0.975))
+gsdat <- gsdat[which(gsdat$yield > 0.73), ] ## removes outlier low yields (0.025 quantile)
+gsdat <- gsdat[which(gsdat$yield < 7.25), ] ## removes outlier high yields (0.975 quantile)
 
 # Fit production function -------------------------------------------------
-# this is the production function using quantile regression
+# production function using quantile regression
 qy.rq <- rq(log(yield)~year+factor(trt)+log(dap+1)*log(can+1), tau = 0.5, data = gsdat)
 summary(qy.rq)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")) ## classify site index zones
