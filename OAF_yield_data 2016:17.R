@@ -70,8 +70,8 @@ gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]),] ## removes incomplete case
 gsdat <- gsdat[which(gsdat$can < 100 & gsdat$dap < 100), ] ## removes outlier fertilizer treatments
 gsdat <- gsdat[which(gsdat$fsize > 0), ] ## removes field size = 0
 quant <- quantile(gsdat$yield, probs=c(0.025,0.975))
-gsdat <- gsdat[which(gsdat$yield > 0.73), ] ## removes outlier low yields (0.025 quantile)
-gsdat <- gsdat[which(gsdat$yield < 7.25), ] ## removes outlier high yields (0.975 quantile)
+gsdat <- gsdat[which(gsdat$yield > quant[1]), ] ## removes outlier low yields (0.025 quantile)
+gsdat <- gsdat[which(gsdat$yield < quant[2]), ] ## removes outlier high yields (0.975 quantile)
 
 # Fit production function -------------------------------------------------
 # production function using quantile regression
