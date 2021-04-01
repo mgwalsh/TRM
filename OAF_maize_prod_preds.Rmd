@@ -1,5 +1,5 @@
 ---
-title:  Spatial yield models from survey data
+title:  Spatial yield predictions from survey data
 author: M.G. Walsh, ...
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
