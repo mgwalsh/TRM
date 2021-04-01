@@ -1,0 +1,464 @@
+---
+title:  Spatial yield models from survey data
+author: M.G. Walsh, ...
+date: "`r format(Sys.time(), '%d, %B, %Y')`"
+output:
+  html_notebook:
+    toc: true
+    toc_depth: 1
+    fig_caption: true
+    css: style.css
+---
+
+# Introduction
+
+This notebook develops an example of a spatial (maize) yield model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site quality index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit version of this can be used to identify the potential productivity of croplands and to provide a comparative frame of reference for management options.
+
+The SI is the spatial part, which we predict using remote sensing and GIS data with machine learning in [R](https://www.r-project.org/). We intend for the approach to be generalizeable to other crop productivity surveys and experiments in which both input/output relationships as well as variability in site quality are deemed important for crop management as well as for program impact monitoring and evaluation. 
+
+The example maize yield data we shall use were collected over two cropping seasons (2016 & 2017) by [One Acre Fund (OAF)](https://oneacrefund.org/) in Western Kenya as part of their annual program monitoring activities. This is a fairly large dataset with 5,987 georeferenced plots distributed over the two cropping seasons and across 333 Level-3 administrative areas (*Locations*). The data are split between plots belonging to farmers that were participating in the OAF maize program (*treated*) and those who were not participating (*controls*) at the time. Data on fertilizer input use on each plot (CAN & DAP) and estimated plot size are also included. 
+
+Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering climate, terrain, land surface, soil, vegetation and anthropic factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., landform and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the layers have been harmonized and are available for all of Africa. 
+
+The notebook is available and will be maintained on [Github](). To actually run it and to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are greatfully acknowledged for all of their hard work.
+
+```{r}
+# package names
+packages <- c("downloader", "rgdal", "sp", "raster", "quantreg", "arm", "leaflet", "htmlwidgets", "devtools", "caret", "mgcv", "MASS", "randomForest", "gbm", "nnet", "plyr", "doParallel", "dismo")
+
+# install packages
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+# load packages
+invisible(lapply(packages, library, character.only = TRUE))
+```
+
+# General data setup
+
+This first section of the notebook sets up the survey data and links these to current remote sensing and GIS data for Kenya that are maintained by [AfSIS (2020)](https://osf.io/4jvnu). The following chunk fetches the data and links these to the remote sensing and GIS layers represented by `grids` variable stack.
+
+```{r}
+# Data setup --------------------------------------------------------------
+# Create a data folder in your current working directory
+dir.create("OAF_data", showWarnings=F)
+setwd("./OAF_data")
+
+# download OAF yield data
+download("https://www.dropbox.com/s/lhniws8prfvjw9r/OAF_yield_data.csv.zi?raw=1", "OAF_yield_data.csv.zip", mode = "wb")
+unzip("OAF_yield_data.csv.zip", overwrite = T)
+yield <- read.table("OAF_yield_data.csv", header = T, sep = ",")
+yield$trt <- ifelse(yield$trt == 1, "oaf", "control")
+# yield <- yield[!duplicated(yield), ] ## removes duplicates if needed
+
+# download GADM-L3 shapefile (@ http://www.gadm.org)
+download("https://www.dropbox.com/s/otspr9b9jtuyneh/KEN_adm3.zip?raw=1", "KEN_adm3.zip", mode = "wb")
+unzip("KEN_adm3.zip", overwrite = T)
+shape <- shapefile("KEN_adm3.zip")
+
+# download raster stack
+download("https://osf.io/4jvnu?raw=1", "KE_250m_2020.zip", mode = "wb")
+unzip("KE_250m_2020.zip", overwrite = T)
+glist <- list.files(pattern="tif", full.names = T)
+grids <- stack(glist)
+```
+
+As the `yield` dataframe only covers portions of Western Kenya, we initially define the relevant Area of Interest based on the min/max survey coordinates and crop all of the `grids` raster stack to that bounding box. This is mostly to reduce computing times.
+
+```{r}
+# set Area of Interest grid extent
+ext <- data.frame(lat = c(-1.2,-1.2,1.2,1.2), lon = c(33.9,35.5,33.9,35.5)) ## set AOI extent in degrees
+names(ext) <- c("lat","lon")
+coordinates(ext) <- ~ lon + lat
+proj4string(ext) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
+ext <- spTransform(ext, CRS("+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+bb <- extent(ext)
+grids <- crop(grids, bb)
+```
+
+This next chunk extracts the GIS and grid data to the `yield` dataframe and also does a bit of outlier cleaning. It generates a new dataframe called `gsdat`, which will the main focus for fitting and validating the various machine learning models that are presented in subsequent sections.
+
+```{r}
+# attach GADM-L3 admin unit names from shape
+coordinates(yield) <- ~lon+lat
+projection(yield) <- projection(shape)
+gadm <- yield %over% shape
+yield <- as.data.frame(yield)
+yield <- cbind(gadm[ ,c(5,7,9)], yield)
+colnames(yield) <- c("district","division","location","id","lat","lon","year","trt","can","dap","fsize","yield")
+
+# project survey coords to grid CRS
+yield.proj <- as.data.frame(project(cbind(yield$lon, yield$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+colnames(yield.proj) <- c("x","y")
+yield <- cbind(yield, yield.proj)
+coordinates(yield) <- ~x+y
+projection(yield) <- projection(yield)
+
+# extract gridded variables at survey locations
+yieldgrid <- extract(grids, yield)
+gsdat <- as.data.frame(cbind(yield, yieldgrid)) 
+
+# clean data
+gsdat <- gsdat[complete.cases(gsdat[,c(1:3,13:44)]), ] ## removes incomplete cases
+gsdat <- gsdat[which(gsdat$can < 100 & gsdat$dap < 100), ] ## removes outlier fertilizer treatments
+gsdat <- gsdat[which(gsdat$fsize > 0), ] ## removes field size = 0
+quant <- quantile(gsdat$yield, probs=c(0.025,0.975))
+gsdat <- gsdat[which(gsdat$yield > quant[1]), ] ## removes low outlier yields (<2.5% quantile)
+gsdat <- gsdat[which(gsdat$yield < quant[2]), ] ## removes high outlier yields (>97.5% quantile)
+
+# write out clean dataframe
+dir.create("Results", showWarnings = F)
+write.csv(gsdat, "./Results/OAF_gsdat.csv", row.names = F)
+
+# yield survey location map widget
+w <- leaflet() %>%
+  setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 8) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
+saveWidget(w, 'OAF_yield_survey.html', selfcontained = T) ## save widget
+w ## plot widget
+```
+
+# Fit an initial production function
+
+We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional covariates. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite “robust to outliers”. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields are lie above the regression line and group B for which observed yields lie below it. This creates a new variable `qy` in the `gsdat` dataframe.  
+
+```{r}
+# this is a basic production function using quantile regression
+qy.rq <- rq(log(yield)~year+factor(trt)+log(dap+1)*log(can+1), tau = 0.5, data = gsdat)
+gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")) ## classify the residuals
+summary(qy.rq)
+```
+
+As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields (t/ha) between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment. 
+
+```{r, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index classes."}
+par(pty="s", c(3,3,0.2,0.1))
+boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", gsdat)
+```
+
+# Machine-learning-based predictive mapping
+
+The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run.
+
+Note however, that you are not limited to only these specific models. The [caret]() package, on which we rely on here, offers many alternatives. You may want to explore and experiment with those.
+
+## Model setups
+
+The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g. [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
+
+```{r}
+rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrubs extraneous objects in memory
+
+# set calibration/validation set randomization seed
+seed <- 12358
+set.seed(seed)
+
+# split data into calibration and validation sets
+gsIndex <- createDataPartition(gsdat$qy, p = 4/5, list = F, times = 1)
+gs_cal <- gsdat[ gsIndex,]
+gs_val <- gsdat[-gsIndex,]
+
+# Site index calibration labels
+labs <- c("qy") 
+lcal <- as.vector(t(gs_cal[labs]))
+
+# raster calibration features
+fcal <- gs_cal[,14:32,36:59]
+```
+
+## Spatial trend model ([mgcv](https://cran.r-project.org/web/packages/mgcv/mgcv.pdf))
+
+This is a simple spatially smoothed *generalized additive model* applying the `gam` function on the SI values at different sampling locations in Western Kenya, based only on their georeference. It is similar to ordinary kriging with cross-validation ... but it is simpler and much faster to compute in this context.
+
+```{r, results='hide'}
+# select central place covariates
+gf_cpv <- gs_cal[,33:35]
+
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T, 
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+gm <- train(gf_cpv, lcal, 
+            method = "gam",
+            preProc = c("center","scale"), 
+            family = "binomial",
+            metric = "ROC",
+            trControl = tc)
+
+# model outputs & predictions
+summary(gm)
+gm.pred <- predict(grids, gm, type = "prob") ## spatial predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_gm.rds", sep = "")
+saveRDS(gm, fname)
+```
+
+## Central place model ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
+
+Central places are influential variables in places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processess. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among others.
+
+```{r, results='hide'}
+# select central place covariates
+gf_cpv <- gs_cal[,21:32]
+
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+gl1 <- train(gf_cpv, lcal, 
+             method = "glmStepAIC",
+             family = "binomial",
+             preProc = c("center","scale"), 
+             trControl = tc,
+             metric ="ROC")
+
+# model outputs & predictions
+gl1.pred <- predict(grids, gl1, type = "prob") ## spatial predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_gl1.rds", sep = "")
+saveRDS(gl1, fname)
+```
+
+## GLM with all spatial features ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
+
+This model is very similar to the *Central place model* above, but it contains all of the 46 spatial features and then backward selects from them to generate a prediction via a generalized linear model.
+
+```{r, results='hide'}
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+gl2 <- train(fcal, lcal, 
+             method = "glmStepAIC",
+             family = "binomial",
+             preProc = c("center","scale"), 
+             trControl = tc,
+             metric ="ROC")
+
+# model outputs & predictions
+gl2.pred <- predict(grids, gl2, type = "prob") ## spatial predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_gl2.rds", sep = "")
+saveRDS(gl2, fname)
+```
+
+## Random forest ([randomForest](https://cran.r-project.org/web/packages/randomForest/randomForest.pdf))
+
+The below is a bagging chunk that uses [Breiman & Cutler's](https://link.springer.com/article/10.1023/A:1010933404324) algorithm with all of the feature data. A good, short article to look at for reference in context here is [Barnard et al.](https://www.researchgate.net/publication/331328203_Can't_see_the_random_forest_for_the_decision_trees_selecting_predictive_models_for_restoration_ecology).
+
+```{r, results='hide'}
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+tg <- expand.grid(mtry = seq(1,5, by=1)) ## model tuning steps
+
+# model training
+rf <- train(fcal, lcal,
+            preProc = c("center","scale"),
+            method = "rf",
+            ntree = 501,
+            metric = "ROC",
+            tuneGrid = tg,
+            trControl = tc)
+
+# model outputs & predictions
+rf.pred <- predict(grids, rf, type = "prob") ## spatial predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_rf.rds", sep = "")
+saveRDS(rf, fname)
+```
+
+## Generalized boosting ([gbm](https://cran.r-project.org/web/packages/gbm/gbm.pdf))
+
+This next chunk represents one of the *boosting* techniques that can be used for both regression or classification. It is similar to the `randomForest` above, but uses a boosting technique that emphasizes successful predictions rather than penalizing poor predictions via *bagging*. There is a wide-array of literature around the so-called *"greedy algorithms"*. Very good descriptions of these are provided in [Hastie et al, 2009](https://web.stanford.edu/~hastie/ElemStatLearn/).
+
+```{r, results='hide'}
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T, summaryFunction = twoClassSummary,
+                   allowParallel = T)
+
+## for initial <gbm> tuning guidelines see @ https://stats.stackexchange.com/questions/25748/what-are-some-useful-guidelines-for-gbm-parameters
+tg <- expand.grid(interaction.depth = seq(2,5, by=1), shrinkage = 0.01, n.trees = seq(101,501, by=50),
+                  n.minobsinnode = 50) ## model tuning steps
+
+# model training
+gb <- train(fcal, lcal, 
+            method = "gbm", 
+            preProc = c("center", "scale"),
+            trControl = tc,
+            tuneGrid = tg,
+            metric = "ROC")
+
+# model outputs & predictions
+gb.pred <- predict(grids, gb, type = "prob") ## spatial predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_gb.rds", sep = "")
+saveRDS(gb, fname)
+```
+
+## Neural network
+
+The last model we fit here is a simple feed-forward neural network.
+
+```{r, results='hide'}
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+tg <- expand.grid(size = seq(2,10, by=2), decay = c(0.001, 0.01, 0.1)) ## model tuning steps
+
+# model training
+nn <- train(fcal, lcal, 
+            method = "nnet",
+            preProc = c("center","scale"), 
+            tuneGrid = tg,
+            trControl = tc,
+            metric ="ROC")
+
+# model outputs & predictions
+nn.pred <- predict(grids, nn, type = "prob") ## spatial predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_nn.rds", sep = "")
+saveRDS(nn, fname)
+```
+
+# Model ensemble predictions
+
+The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another in an ensemble. 
+
+```{r}
+# Model stacking setup ----------------------------------------------------
+preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
+names(preds) <- c("gm","gl1","gl2","rf","gb","nn")
+# plot(preds, axes = F)
+
+# extract model predictions
+coordinates(gs_val) <- ~x+y
+projection(gs_val) <- projection(preds)
+gspred <- extract(preds, gs_val)
+gspred <- as.data.frame(cbind(gs_val, gspred))
+
+# stacking model validation labels and features
+gs_val <- as.data.frame(gs_val)
+lval <- as.vector(t(gs_val[labs]))
+fval <- gspred[,62:67] ## subset validation features
+
+# Model stacking ----------------------------------------------------------
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T, 
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+si <- train(fval, lval,
+            method = "glmStepAIC",
+            family = "binomial",
+            metric = "ROC",
+            trControl = tc)
+
+# model outputs & predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_si.rds", sep = "")
+saveRDS(si, fname)summary(si)
+print(si)
+si.pred <- predict(preds, si, type = "prob") ## spatial predictions
+plot(si.pred, axes = F)
+```
+
+# Prediction checks
+
+```{r}
+# Receiver-operator characteristics ---------------------------------------
+cp_pre <- predict(si, fval, type="prob")
+cp_val <- cbind(lval, cp_pre)
+cpa <- subset(cp_val, cp_val=="A", select=c(A))
+cpb <- subset(cp_val, cp_val=="B", select=c(A))
+cp_eval <- evaluate(p=cpa[,1], a=cpb[,1]) ## calculate ROC's on test set
+plot(cp_eval, 'ROC') ## plot ROC curve
+
+# generate feature mask ---------------------------------------------------
+t <- threshold(cp_eval) ## calculate thresholds based on ROC
+r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
+mask <- reclassify(si.pred, r) ## reclassify stacked predictions
+
+# write prediction grids --------------------------------------------------
+gspreds <- stack(preds, si.pred, mask)
+names(gspreds) <- c("gm","gl1","gl2","rf","gb","nn","si","mk")
+fname <- paste("./Results/","OAF_", labs, "_preds_2020.tif", sep = "")
+writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
+# site index prediction check ---------------------------------------------
+coordinates(gsdat) <- ~x+y
+projection(gsdat) <- projection(grids)
+gspre <- extract(gspreds, gsdat)
+gsout <- as.data.frame(cbind(gsdat, gspre))
+gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
+confusionMatrix(gsout$mzone, gsout$qy) ## overall prediction accuracy stats
+boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
+        cex.lab=1.3, gsout) ## yield differences between predicted site index zones
+```
+
+# Multilevel model of maize yield potentials
+
+```{r}
+yld.lme <- lmer(log(yield)~factor(trt)*log(si+1)+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
+gsout$yldf <- exp(fitted(yld.lme, gsout))
+summary(yld.lme) ## mixed model yield estimate results
+
+# Quantile regression (uncertainty) plot
+par(pty="s")
+par(mfrow=c(1,1), mar=c(5,5,1,1))
+plot(yield~yldf, xlab="Production function (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
+     xlim=c(0,8), ylim=c(0,8), gsout)
+stQ <- rq(yield~yldf, tau=c(0.025,0.5,0.975), data=gsout)
+print(stQ)
+curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=8, col="blue", lwd=2)
+curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=8, col="red", lwd=2)
+curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue", lwd=2)
+abline(c(0,1), col="grey", lwd=1)
+```
+
+```{r}
+# Write output data frame -------------------------------------------------
+fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
+write.csv(gsout, fname, row.names = F)
+```
+
