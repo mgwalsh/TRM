@@ -327,7 +327,7 @@ fname <- paste("./Results/", labs, "_gb.rds", sep = "")
 saveRDS(gb, fname)
 ```
 
-## Neural network [MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf)
+## Neural network ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
 
 With the last model we fit here is a simple feed-forward neural network i.e., a "single layer perceptron". This is a type of linear classifier, which combinines a set of weights with the feature vector. Note that more complex network structures, such as [Deep-learning](https://en.wikipedia.org/wiki/Deep_learning) could have been applied, but we leave those options for you to explore. 
 
@@ -375,7 +375,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 # stacking model validation labels and features
 gs_val <- as.data.frame(gs_val)
 lval <- as.vector(t(gs_val[labs]))
-fval <- gspred[,62:67] ## subset validation features
+fval <- gspred[,60:65] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
