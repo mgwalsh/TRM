@@ -18,9 +18,9 @@ The SI is the spatial part, which we predict using remote sensing and GIS data w
 
 The example maize yield data we shall use were collected over two cropping seasons (2016 & 2017) by [One Acre Fund (OAF)](https://oneacrefund.org/) in Western Kenya as part of their annual program monitoring activities. This is a fairly large dataset with 5,987 georeferenced plots distributed over the two cropping seasons and across 333 Level-3 administrative areas (*Locations*). The data are split between plots belonging to farmers that were participating in the OAF maize program (*treated*) and those who were not participating (*controls*) at the time. Data on fertilizer input use on each plot (CAN & DAP) and estimated plot size are also included. 
 
-Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering climate, terrain, land surface, soil, vegetation and anthropic factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., landform and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the layers have been harmonized and are available for all of Africa. 
+Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering climate, terrain, land surface, soil, vegetation and anthropic factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., landform and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the feature layers have been harmonized and are available for all of Africa. 
 
-The notebook is available and will be maintained on [Github](). To actually run it and to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are greatfully acknowledged for all of their hard work.
+The notebook is available and will be maintained on [Github](https://github.com/mgwalsh/TRM/blob/master/OAF_maize_prod_preds.Rmd). To actually run it to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are greatfully acknowledged for all of their hard work.
 
 ```{r}
 # package names
@@ -121,7 +121,7 @@ saveWidget(w, 'OAF_yield_survey.html', selfcontained = T) ## save widget
 w ## plot widget
 ```
 
-# Fit an initial production function
+# Fit a minimal aggregate production function
 
 We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional spatial features. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite robust to outlying observations. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields are lie above the regression line and group B for which observed yields lie below it. This creates a new variable `qy` in the `gsdat` dataframe.  
 
@@ -141,9 +141,9 @@ boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", gsdat)
 
 # Machine-learning-based predictive mapping of SI
 
-The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run.
+The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled [(stacked)](https://datasciblog.github.io/2016/12/27/a-kagglers-guide-to-model-stacking-in-practice/) on an *independent* validation dataset. When applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field data and MLAs are obtained and run.
 
-Note however, that you are not limited to only these models. The [`caret`](https://topepo.github.io/caret/index.html) package, on which we rely on here, offers many alternatives. We encourage you to explore and experiment with those.
+Note however, that you are not limited to only these models. The [`caret`](https://topepo.github.io/caret/index.html) package, on which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
 
 ## Model setups
 
@@ -439,6 +439,8 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
 ```
 
 # Multilevel model of maize yield potentials
+
+We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SI with the previously presented production function. In this particular case a random intercept model with
 
 ```{r}
 yld.lme <- lmer(log(yield)~factor(trt)*log(si/(1-si))+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
