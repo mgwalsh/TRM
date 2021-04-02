@@ -1,5 +1,5 @@
 ---
-title:  Spatial yield predictions from survey data
+title:  Spatial yield potentials from survey data
 author: M.G. Walsh, ...
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
@@ -329,7 +329,7 @@ saveRDS(gb, fname)
 
 ## Neural network ([nnet](https://www.rdocumentation.org/packages/nnet/versions/7.3-15/topics/nnet))
 
-With the last model we fit here is a simple feed-forward neural network i.e., a "single layer perceptron". This is a type of linear classifier, which combines a set of weights with the feature vector. Note that more complex multilayer network structures, such as [Deep-learning](https://en.wikipedia.org/wiki/Deep_learning) could have been applied, but we leave those options for you to explore. 
+With the last model we fit here is a simple feed-forward neural network i.e., a "single layer perceptron". This is a type of linear classifier, which combines a set of weights with the feature vector. Note that more complex multilayer network structures, such as [Deep-learning](https://en.wikipedia.org/wiki/Deep_learning) can be applied, but we leave those options for you to explore. 
 
 ```{r, results='hide'}
 mc <- makeCluster(detectCores())
@@ -440,7 +440,7 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
 
 # Multilevel model of maize yield potentials
 
-We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented minimal production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the intercepts are allowed to vary by year and administrative location.
+We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented minimal production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the intercepts are allowed to vary by `year` and administrative `location`.
 
 ```{r}
 yld.lme <- lmer(log(yield)~factor(trt)*log(si/(1-si))+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
