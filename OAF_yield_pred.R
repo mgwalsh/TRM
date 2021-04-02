@@ -33,11 +33,11 @@ labs <- c("qy")
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
-fcal <- gs_cal[,14:32,36:59]
+fcal <- gs_cal[,13:31,35:58]
 
 # Spatial trend model <mgcv> -----------------------------------------------
 # select spatial coordinates
-gf_cpv <- gs_cal[,33:35]
+gf_cpv <- gs_cal[,32:34]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -66,7 +66,7 @@ saveRDS(gm, fname)
 
 # Central place theory model <glm> -----------------------------------------
 # select central place covariates
-gf_cpv <- gs_cal[,21:32]
+gf_cpv <- gs_cal[,20:31]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -220,7 +220,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 # stacking model validation labels and features
 gs_val <- as.data.frame(gs_val)
 lval <- as.vector(t(gs_val[labs]))
-fval <- gspred[,62:67] ## subset validation features
+fval <- gspred[,60:65] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -278,7 +278,7 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
         cex.lab=1.3, gsout) ## yield differences between predicted site index zones
 
 # Maize yield potentials (t/ha) ------------------------------------------
-yld.lme <- lmer(log(yield)~factor(trt)*log(si+1)+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
+yld.lme <- lmer(log(yield)~factor(trt)*log(si/(1-si))+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
 summary(yld.lme) ## mixed model yield estimate results
 gsout$yldf <- exp(fitted(yld.lme, gsout))
 
