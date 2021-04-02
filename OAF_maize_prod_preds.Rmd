@@ -1,18 +1,18 @@
 ---
-title:  Spatial yield potentials from survey data
-author: M.G. Walsh, ...
+title: Spatial yield potentials from survey data
+author: M.G. Walsh, J. Chamberlin, ...
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
   html_notebook:
-    toc: true
+    toc: yes
     toc_depth: 1
-    fig_caption: true
     css: style.css
+    fig_caption: true
 ---
 
 # Introduction
 
-This notebook develops an example of a spatial (maize) yield prediction model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit multilevel model version of this can be used to identify the potential productivity of croplands and to provide a comparative frame of reference for evaluating management options.
+This notebook develops an example of a spatial crop yield prediction model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit multilevel model version of this can be used to identify the potential productivity of croplands and to provide a comparative frame of reference for evaluating management options.
 
 The SI is the spatial part, which we predict using remote sensing and GIS data with machine learning in [R](https://www.r-project.org/). We intend for the approach to be generalizeable to other crop productivity surveys and experiments in which both input/output relationships as well as variability in site quality are deemed important for crop management as well as for program impact monitoring and evaluation. 
 
@@ -123,7 +123,7 @@ w ## plot widget
 
 # Fit a minimal aggregate production function
 
-We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional spatial features. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite robust to outlying observations. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields are lie above the regression line and group B for which observed yields lie below it. This creates a new variable `qy` in the `gsdat` dataframe.  
+We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional spatial features. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite robust to outlying observations. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields are lie above the regression line and group B for which observed yields lie below it. This creates a new variable (`qy`) in the `gsdat` dataframe.  
 
 ```{r}
 # this is a basic production function using quantile regression
@@ -135,8 +135,8 @@ summary(qy.rq)
 As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment ... in other words SI. 
 
 ```{r, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index classes."}
-par(pty="s", c(3,3,0.2,0.1))
-boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", gsdat)
+par(pty="s", mar=c(3,3,0.2,0.1))
+boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", xlab="SI label", gsdat)
 ```
 
 # Machine-learning-based predictive mapping of SI
@@ -440,7 +440,7 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
 
 # Multilevel model of maize yield potentials
 
-We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented minimal production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the intercepts are allowed to vary by `year` and administrative `location`.
+We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented minimal production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the model intercepts i.e., the efficiency parameters of the production function, are allowed to vary by `year` and administrative `location`.
 
 ```{r}
 yld.lme <- lmer(log(yield)~factor(trt)*log(si/(1-si))+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
