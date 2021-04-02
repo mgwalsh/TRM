@@ -3,11 +3,11 @@ title: Spatial yield potentials from survey data
 author: M.G. Walsh, J. Chamberlin, ...
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
-  html_notebook:
-    toc: yes
+  html_document:
+    toc: true
     toc_depth: 1
-    css: style.css
     fig_caption: true
+    css: style.css
 ---
 
 # Introduction
@@ -20,9 +20,9 @@ The example maize yield data we shall use were collected over two cropping seaso
 
 Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering climate, terrain, land surface, soil, vegetation and anthropic factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., landform and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the feature layers have been harmonized and are available for all of Africa. 
 
-The notebook is available and will be maintained on [Github](https://github.com/mgwalsh/TRM/blob/master/OAF_maize_prod_preds.Rmd). To actually run it to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are greatfully acknowledged for all of their hard work.
+The notebook is available and will be maintained on [MGWs Github](https://github.com/mgwalsh/TRM/blob/master/OAF_maize_prod_preds.Rmd). To actually run it to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are greatfully acknowledged for all of their hard work.
 
-```{r}
+```{r, message=FALSE}
 # package names
 packages <- c("downloader", "rgdal", "sp", "raster", "quantreg", "arm", "leaflet", "htmlwidgets", "devtools", "caret", "mgcv", "MASS", "randomForest", "gbm", "nnet", "plyr", "doParallel", "dismo")
 
@@ -40,7 +40,7 @@ invisible(lapply(packages, library, character.only = TRUE))
 
 This first section of the notebook sets up the survey data and links these to current remote sensing and GIS data for Kenya that are maintained by [AfSIS (2020)](https://osf.io/4jvnu). The following chunk fetches the data and links these to the remote sensing and GIS layers represented by `grids` variable stack.
 
-```{r}
+```{r, message=FALSE}
 # Data setup --------------------------------------------------------------
 # Create a data folder in your current working directory
 dir.create("OAF_data", showWarnings=F)
@@ -67,7 +67,7 @@ grids <- stack(glist)
 
 As the `yield` dataframe only covers portions of Western Kenya, we initially define the relevant Area of Interest based on the min/max survey coordinates and crop all of the `grids` raster stack to that bounding box. This is mostly to reduce computing times.
 
-```{r}
+```{r, message=FALSE}
 # set Area of Interest grid extent
 ext <- data.frame(lat = c(-1.2,-1.2,1.2,1.2), lon = c(33.9,35.5,33.9,35.5)) ## set AOI extent in degrees
 names(ext) <- c("lat","lon")
@@ -80,7 +80,7 @@ grids <- crop(grids, bb)
 
 This next chunk extracts the GIS and grid data to the `yield` dataframe and also does a bit of outlier cleaning. It generates a new dataframe called `gsdat`, which will the main focus for fitting and validating the various machine learning models that are presented in subsequent sections.
 
-```{r}
+```{r, message=FALSE}
 # attach GADM-L3 admin unit names from shape
 coordinates(yield) <- ~lon+lat
 projection(yield) <- projection(shape)
@@ -121,11 +121,11 @@ saveWidget(w, 'OAF_yield_survey.html', selfcontained = T) ## save widget
 w ## plot widget
 ```
 
-# Fit a minimal aggregate production function
+# Fit an aggregate production function
 
 We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional spatial features. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite robust to outlying observations. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields are lie above the regression line and group B for which observed yields lie below it. This creates a new variable (`qy`) in the `gsdat` dataframe.  
 
-```{r}
+```{r, message=FALSE}
 # this is a basic production function using quantile regression
 qy.rq <- rq(log(yield)~year+factor(trt)+log(dap+1)*log(can+1), tau = 0.5, data = gsdat)
 gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")) ## classify the residuals
@@ -136,20 +136,20 @@ As might be expected (and as shown in the boxplot below), there are substantial 
 
 ```{r, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index classes."}
 par(pty="s", mar=c(3,3,0.2,0.1))
-boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", xlab="SI label", gsdat)
+boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", xlab="SI label", cex=1.2, gsdat)
 ```
 
 # Machine-learning-based predictive mapping of SI
 
 The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models will be ensembled [(stacked)](https://datasciblog.github.io/2016/12/27/a-kagglers-guide-to-model-stacking-in-practice/) on an *independent* validation dataset. When consistently applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field and remote data or different MLAs are obtained and run.
 
-Note that you are not limited to only the models that we use here. The [`caret`](https://topepo.github.io/caret/index.html) package, on which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
+Note that you are not limited to only the models that we use. The [`caret`](https://topepo.github.io/caret/index.html) package, on which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
 
 ## Model setups
 
 The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g. [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
 
-```{r}
+```{r, message=FALSE}
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrubs extraneous objects in memory
 
 # set calibration/validation set randomization seed
@@ -173,7 +173,7 @@ fcal <- gs_cal[,13:31,35:58]
 
 This is a simple spatially smoothed *generalized additive model* applying the `gam` function on the SI values at different sampling locations in Western Kenya, based only on their georeference. It is similar to ordinary kriging with cross-validation ... but it is simpler and much faster to compute in this context.
 
-```{r, results='hide'}
+```{r, results='hide', message=FALSE}
 # select central place covariates
 gf_cpv <- gs_cal[,32:34]
 
@@ -206,7 +206,7 @@ saveRDS(gm, fname)
 
 Central places are influential variables in places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processess. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among others.
 
-```{r, results='hide'}
+```{r, results='hide', message=FALSE}
 # select central place covariates
 gf_cpv <- gs_cal[,20:31]
 
@@ -238,7 +238,7 @@ saveRDS(gl1, fname)
 
 This model is very similar to the *Central place model* above, but it contains all of the 46 spatial features and then backward selects from them to generate a prediction via a generalized linear model.
 
-```{r, results='hide'}
+```{r, results='hide'message=FALSE}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -267,7 +267,7 @@ saveRDS(gl2, fname)
 
 The below is a bagging chunk that uses [Breiman & Cutler's](https://link.springer.com/article/10.1023/A:1010933404324) algorithm with all of the feature data. A good, short article to look at for reference in context here is [Barnard et al.](https://www.researchgate.net/publication/331328203_Can't_see_the_random_forest_for_the_decision_trees_selecting_predictive_models_for_restoration_ecology).
 
-```{r, results='hide'}
+```{r, results='hide', message=FALSE}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -298,7 +298,7 @@ saveRDS(rf, fname)
 
 This next chunk represents one of the *boosting* techniques that can be used for both regression or classification. It is similar to the `randomForest` above, but uses a boosting technique that emphasizes successful predictions rather than penalizing poor predictions via *bagging*. There is a wide-array of literature around the so-called *"greedy algorithms"*. Very good descriptions of these are provided in [Hastie et al, 2009](https://web.stanford.edu/~hastie/ElemStatLearn/).
 
-```{r, results='hide'}
+```{r, results='hide', message=FALSE}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -331,7 +331,7 @@ saveRDS(gb, fname)
 
 With the last model we fit here is a simple feed-forward neural network i.e., a "single layer perceptron". This is a type of linear classifier, which combines a set of weights with the feature vector. Note that more complex multilayer network structures, such as [Deep-learning](https://en.wikipedia.org/wiki/Deep_learning) can be applied, but we leave those options for you to explore. 
 
-```{r, results='hide'}
+```{r, results='hide', message=FALSE}
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
@@ -360,7 +360,7 @@ saveRDS(nn, fname)
 
 The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another in an ensemble. It also prevents most potential [overfitting](https://en.wikipedia.org/wiki/Overfitting) problems. 
 
-```{r}
+```{r, message=FALSE}
 # Model stacking setup ----------------------------------------------------
 preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
 names(preds) <- c("gm","gl1","gl2","rf","gb","nn")
@@ -397,17 +397,33 @@ si <- train(fval, lval,
 # model outputs & predictions
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_si.rds", sep = "")
-saveRDS(si, fname)summary(si)
-print(si)
+saveRDS(si, fname)
 si.pred <- predict(preds, si, type = "prob") ## spatial predictions
-plot(si.pred, axes = F)
+summary(si)
+```
+
+SI theoretically takes on values between 0 - 1, just like a probability. The chunk below generates the prediction map of the SI across the OAF Area of Interest in Western Kenya.
+
+```{r, message=FALSE}
+# project si.pred to EPSG:3857
+sill <- projectRaster(si.pred, crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+
+# set color pallette
+pal <- colorBin("Greens", domain = 0:1) 
+
+# render map
+w <- leaflet() %>% 
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addRasterImage(sill, colors = pal, opacity = 0.5) %>%
+  addLegend(pal = pal, values = values(sill), title = "Site index")
+w ## plot widget  
 ```
 
 # Prediction checks
 
 This next chunk provides some prediction checks on the ensemble model based on both the validation data, as well as the complete dataset. It also writes out all of the prediction grids as a geotif file, which you can import into a GIS of your choosing for display, query and additional analyses.
 
-```{r}
+```{r, message=FALSE}
 # validation set receiver-operator characteristics ------------------------
 cp_pre <- predict(si, fval, type="prob")
 cp_val <- cbind(lval, cp_pre)
@@ -440,7 +456,7 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
 
 # Multilevel model of maize yield potentials
 
-We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented minimal production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the model intercepts i.e., the efficiency parameters of the production function, are allowed to vary by `year` and administrative `location`.
+We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented aggregate production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the model intercepts i.e., the efficiency parameters of the production function, are allowed to vary by `year` and administrative `location`.
 
 ```{r}
 yld.lme <- lmer(log(yield)~factor(trt)*log(si/(1-si))+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
@@ -465,7 +481,6 @@ Finally, we write out the complete dataframe, including all of the predictions f
 
 ```{r}
 # Write output data frame -------------------------------------------------
-fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
-write.csv(gsout, fname, row.names = F)
+write.csv(gsout, "./Results/OAF_gsout.csv", row.names = F)
 ```
 
