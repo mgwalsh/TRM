@@ -134,7 +134,7 @@ summary(qy.rq)
 
 As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment ... in other words SI. 
 
-```{r, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index classes."}
+```{r, echo=FALSE, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index labels."}
 par(pty="s", mar=c(3,3,0.2,0.1))
 boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", xlab="SI label", cex=1.2, gsdat)
 ```
@@ -147,7 +147,7 @@ Note that you are not limited to only the models that we use. The [`caret`](http
 
 ## Model setups
 
-The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g. [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
+The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g., [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
 
 ```{r, message=FALSE}
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrubs extraneous objects in memory
@@ -358,7 +358,7 @@ saveRDS(nn, fname)
 
 # SI ensemble predictions
 
-The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another in an ensemble. It also prevents most potential [overfitting](https://en.wikipedia.org/wiki/Overfitting) problems. 
+The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another in an ensemble. It also prevents most [overfitting](https://en.wikipedia.org/wiki/Overfitting) problems. 
 
 ```{r, message=FALSE}
 # Model stacking setup ----------------------------------------------------
