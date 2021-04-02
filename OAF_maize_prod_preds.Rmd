@@ -238,7 +238,7 @@ saveRDS(gl1, fname)
 
 This model is very similar to the *Central place model* above, but it contains all of the 46 spatial features and then backward selects from them to generate a prediction via a generalized linear model.
 
-```{r, results='hide'message=FALSE}
+```{r, results='hide', message=FALSE}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
