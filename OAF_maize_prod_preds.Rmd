@@ -12,7 +12,7 @@ output:
 
 # Introduction
 
-This notebook develops an example of a spatial (maize) yield model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site quality index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit version of this can be used to identify the potential productivity of croplands and to provide a comparative frame of reference for management options.
+This notebook develops an example of a spatial (maize) yield prediction model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit multilevel model version of this can be used to identify the potential productivity of croplands and to provide a comparative frame of reference for evaluating management options.
 
 The SI is the spatial part, which we predict using remote sensing and GIS data with machine learning in [R](https://www.r-project.org/). We intend for the approach to be generalizeable to other crop productivity surveys and experiments in which both input/output relationships as well as variability in site quality are deemed important for crop management as well as for program impact monitoring and evaluation. 
 
@@ -123,7 +123,7 @@ w ## plot widget
 
 # Fit an initial production function
 
-We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional covariates. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite “robust to outliers”. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields are lie above the regression line and group B for which observed yields lie below it. This creates a new variable `qy` in the `gsdat` dataframe.  
+We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional covariates. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite robust to outlying observations. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields are lie above the regression line and group B for which observed yields lie below it. This creates a new variable `qy` in the `gsdat` dataframe.  
 
 ```{r}
 # this is a basic production function using quantile regression
@@ -139,11 +139,11 @@ par(pty="s", c(3,3,0.2,0.1))
 boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", gsdat)
 ```
 
-# Machine-learning-based predictive mapping
+# Machine-learning-based predictive mapping of SI
 
 The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run.
 
-Note however, that you are not limited to only these specific models. The [caret]() package, on which we rely on here, offers many alternatives. You may want to explore and experiment with those.
+Note however, that you are not limited to only these models. The [caret]() package, on which we rely on here, offers many alternatives. We encourage you to explore and experiment with those.
 
 ## Model setups
 
@@ -162,11 +162,11 @@ gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Site index calibration labels
-labs <- c("qy") 
+labs <- c("qy")
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
-fcal <- gs_cal[,14:32,36:59]
+fcal <- gs_cal[,13:31,35:58]
 ```
 
 ## Spatial trend model ([mgcv](https://cran.r-project.org/web/packages/mgcv/mgcv.pdf))
@@ -175,7 +175,7 @@ This is a simple spatially smoothed *generalized additive model* applying the `g
 
 ```{r, results='hide'}
 # select central place covariates
-gf_cpv <- gs_cal[,33:35]
+gf_cpv <- gs_cal[,32:34]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -208,7 +208,7 @@ Central places are influential variables in places where human impacts occur. Th
 
 ```{r, results='hide'}
 # select central place covariates
-gf_cpv <- gs_cal[,21:32]
+gf_cpv <- gs_cal[,20:31]
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -327,9 +327,9 @@ fname <- paste("./Results/", labs, "_gb.rds", sep = "")
 saveRDS(gb, fname)
 ```
 
-## Neural network
+## Neural network [MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf)
 
-The last model we fit here is a simple feed-forward neural network.
+With the last model we fit here is a simple feed-forward neural network i.e., a "single layer perceptron". This is a type of linear classifier, which combinines a set of weights with the feature vector. Note that more complex network structures, such as [Deep-learning](https://en.wikipedia.org/wiki/Deep_learning) could have been applied, but we leave those options for you to explore. 
 
 ```{r, results='hide'}
 mc <- makeCluster(detectCores())
