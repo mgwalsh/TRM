@@ -132,7 +132,7 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
 summary(qy.rq)
 ```
 
-As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment. 
+As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment ... in other words SI. 
 
 ```{r, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index classes."}
 par(pty="s", c(3,3,0.2,0.1))
@@ -141,9 +141,9 @@ boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", gsdat)
 
 # Machine-learning-based predictive mapping of SI
 
-The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled [(stacked)](https://datasciblog.github.io/2016/12/27/a-kagglers-guide-to-model-stacking-in-practice/) on an *independent* validation dataset. When applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field data and MLAs are obtained and run.
+The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models will be ensembled [(stacked)](https://datasciblog.github.io/2016/12/27/a-kagglers-guide-to-model-stacking-in-practice/) on an *independent* validation dataset. When consistently applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field and remote data or different MLAs are obtained and run.
 
-Note however, that you are not limited to only these models. The [`caret`](https://topepo.github.io/caret/index.html) package, on which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
+Note that you are not limited to only the models that we use here. The [`caret`](https://topepo.github.io/caret/index.html) package, on which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
 
 ## Model setups
 
@@ -356,9 +356,9 @@ fname <- paste("./Results/", labs, "_nn.rds", sep = "")
 saveRDS(nn, fname)
 ```
 
-# Model ensemble predictions
+# SI ensemble predictions
 
-The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another in an ensemble. It also prevents most [overfitting](https://en.wikipedia.org/wiki/Overfitting) problems. 
+The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another in an ensemble. It also prevents most potential [overfitting](https://en.wikipedia.org/wiki/Overfitting) problems. 
 
 ```{r}
 # Model stacking setup ----------------------------------------------------
@@ -440,7 +440,7 @@ boxplot(yield~mzone, notch=T, xlab="SI zone", ylab="Measured yield (t/ha)",
 
 # Multilevel model of maize yield potentials
 
-We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SI with the previously presented production function. In this particular case a random intercept model with
+We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented minimal production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the intercepts are allowed to vary by year and administrative location.
 
 ```{r}
 yld.lme <- lmer(log(yield)~factor(trt)*log(si/(1-si))+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
@@ -461,7 +461,7 @@ curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Finally, we write out the complete dataframe, including all of the predictions for reference and further use. 
+Finally, we write out the complete dataframe, including all of the predictions for reference, reproducability and further use. 
 
 ```{r}
 # Write output data frame -------------------------------------------------
