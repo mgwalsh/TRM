@@ -435,7 +435,7 @@ w ## plot widget
 
 # Prediction checks
 
-This next chunk provides some prediction checks on the ensemble model based on both the validation data, as well as the complete dataset. It also writes out all of the prediction grids to a geotif file, which you can import into a GIS of your choosing for display, query and additional analyses.
+This next chunk provides some prediction checks on the ensemble model based on both the validation, as well as the complete dataframes. It also writes out all of the prediction grids to a geotif file, which you can import into a GIS of your choosing for display, query and additional analyses.
 
 ```{r}
 # validation set receiver-operator characteristics ------------------------
