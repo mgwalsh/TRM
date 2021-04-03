@@ -18,13 +18,13 @@ knitr::opts_chunk$set(message = FALSE)
 
 This notebook develops an example of a spatial crop yield prediction model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit multilevel model version of this can be used to gauge the potential productivity of croplands and to provide a comparative frame of reference for evaluating management options.
 
-The SI is the spatial part, which we predict using remote sensing and GIS data with machine learning in [R](https://www.r-project.org/). We intend for the approach to be generalizeable to other crop productivity surveys and experiments in which both input/output relationships as well as variability in site quality are deemed important for crop management as well as for program impact monitoring and evaluation. 
+The SI is the spatial part, which we predict using remote sensing and GIS data with machine learning in [R](https://www.r-project.org/). We intend for the approach to be generalizable to other crop productivity surveys and experiments in which both input/output relationships as well as variability in site quality are deemed important for crop management as well as for program impact monitoring and evaluation. 
 
-The example maize yield data we shall use were collected over two cropping seasons (2016 & 2017) by [One Acre Fund (OAF)](https://oneacrefund.org/) in Western Kenya as part of their annual program monitoring activities. This is a fairly large dataset with 5,987 georeferenced plots distributed over the two cropping seasons and across 333 Level-3 administrative areas i.e., *Locations*. The data are split between plots belonging to farmers that were participating in the OAF maize program (*treated*) and those who were not participating (*controls*) at the time. Data on fertilizer input use on each plot (Calcium Ammonium Nitrate & Diammonium phosphate) and estimated plot size are also included. 
+The example maize yield data we shall use were collected over two cropping seasons (2016 & 2017) by [One Acre Fund (OAF)](https://oneacrefund.org/) in Western Kenya as part of their annual program monitoring activities. This is a fairly large dataset with 5,987 georeferenced plots distributed over the two cropping seasons and across 333 Level-3 administrative areas i.e., *Locations*. The data are split between plots belonging to farmers that were participating in the OAF maize program (*treated*) and those who were not participating (*controls*) at the time. Data on fertilizer input use on each plot (Calcium Ammonium Nitrate & Diammonium Phosphate) and estimated plot size are also included. 
 
-Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering climate, terrain, land surface, soil, vegetation and anthropic factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., landform and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the feature layers have been harmonized and are available for all of Africa. 
+Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering climate, terrain, land surface, soil, vegetation and anthropic factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., land form and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages, among others. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the feature layers have been harmonized and are available for all of Africa. 
 
-The notebook is available and will be maintained on [MGWs Github](https://github.com/mgwalsh/TRM/blob/master/OAF_maize_prod_preds.Rmd). To actually run it to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are greatfully acknowledged for all of their hard work.
+The notebook is available and will be maintained on [MGWs Github](https://github.com/mgwalsh/TRM/blob/master/OAF_maize_prod_preds.Rmd). To actually run it to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are gratefully acknowledged for all of their hard work.
 
 ```{r}
 # package names
@@ -136,7 +136,7 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
 summary(qy.rq)
 ```
 
-As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment ... in other words SI. 
+As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment ... in other words the SI. 
 
 ```{r, echo=FALSE, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index labels."}
 par(pty="s", mar=c(4,4,1,1))
@@ -208,7 +208,7 @@ saveRDS(gm, fname)
 
 ## Central place model ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
 
-Central places are influential variables in places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processess. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among others.
+Central places are influential variables in places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processes. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among others.
 
 ```{r, results='hide'}
 # select central place covariates
@@ -386,7 +386,7 @@ fval <- gspred[,60:65] ## subset validation features
 
 ## Model stacking
 
-```{r}
+```{r, results='hide'}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -397,17 +397,20 @@ tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-si <- invisible(train(fval, lval,
-                method = "glmStepAIC",
-                family = "binomial",
-                metric = "ROC",
-                trControl = tc))
+si <- train(fval, lval,
+            method = "glmStepAIC",
+            family = "binomial",
+            metric = "ROC",
+            trControl = tc)
 
 # model outputs & predictions
 si.pred <- predict(preds, si, type = "prob") ## spatial predictions
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_si.rds", sep = "")
 saveRDS(si, fname)
+```
+
+```{r, echo=FALSE}
 summary(si)
 ```
 
@@ -452,7 +455,7 @@ names(gspreds) <- c("gm","gl1","gl2","rf","gb","nn","si","mk")
 fname <- paste("./Results/","OAF_", labs, "_preds_2020.tif", sep = "")
 writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
-# site index prediction check ---------------------------------------------
+# Site Index prediction check ---------------------------------------------
 coordinates(gsdat) <- ~x+y
 projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
