@@ -476,6 +476,8 @@ gsout$yldf <- exp(fitted(yld.lme, gsout))
 summary(yld.lme) ## mixed model yield estimate results
 ```
 
+## Uncertainty estimates
+
 ```{r, fig.align = "center", fig.cap = "Quantile regression plot of modeled potential vs observed maize yields (t/ha) in Western Kenya. The blue lines are the 2.5% and 97.5% quantile regression estimates."}
 par(pty="s", mar=c(4,4,1,1))
 plot(yield~yldf, xlab="Yield potential (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.4, 
