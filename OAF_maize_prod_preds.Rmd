@@ -136,7 +136,7 @@ gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")
 summary(qy.rq)
 ```
 
-As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not due** to differences between observed years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to spatial characteristics of the production environment ... in other words the SI. 
+As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not attributable** to differences between years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to the spatial characteristics of the production environment ... in other words the SI. 
 
 ```{r, echo=FALSE, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index labels."}
 par(pty="s", mar=c(4,4,1,1))
