@@ -386,6 +386,8 @@ fval <- gspred[,60:65] ## subset validation features
 
 ## Model stacking
 
+The following chunk fits the model ensemble with the `glmStepAIC` function from the `MASS` library. You could explore other options here, but we find that this provides a reasonable combination and weighting of the 6 models that were produced in the individual model training steps.
+
 ```{r, results='hide'}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
