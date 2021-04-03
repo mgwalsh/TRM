@@ -1,5 +1,5 @@
 ---
-title: Spatial yield potentials from survey data
+title: Predicting spatial yield potentials from survey data
 author: M.G. Walsh, J. Chamberlin, ...
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
@@ -360,6 +360,8 @@ saveRDS(nn, fname)
 
 The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another in an ensemble. It also prevents most [overfitting](https://en.wikipedia.org/wiki/Overfitting) problems. 
 
+## Stacking model setup on validation set
+
 ```{r, message=FALSE}
 # Model stacking setup ----------------------------------------------------
 preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, nn.pred)
@@ -376,8 +378,11 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 gs_val <- as.data.frame(gs_val)
 lval <- as.vector(t(gs_val[labs]))
 fval <- gspred[,60:65] ## subset validation features
+```
 
-# Model stacking ----------------------------------------------------------
+# Model stacking
+
+```{r, message=FALSE}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -421,7 +426,7 @@ w ## plot widget
 
 # Prediction checks
 
-This next chunk provides some prediction checks on the ensemble model based on both the validation data, as well as the complete dataset. It also writes out all of the prediction grids as a geotif file, which you can import into a GIS of your choosing for display, query and additional analyses.
+This next chunk provides some prediction checks on the ensemble model based on both the validation data, as well as the complete dataset. It also writes out all of the prediction grids to a geotif file, which you can import into a GIS of your choosing for display, query and additional analyses.
 
 ```{r, message=FALSE}
 # validation set receiver-operator characteristics ------------------------
@@ -429,15 +434,15 @@ cp_pre <- predict(si, fval, type="prob")
 cp_val <- cbind(lval, cp_pre)
 cpa <- subset(cp_val, cp_val=="A", select=c(A))
 cpb <- subset(cp_val, cp_val=="B", select=c(A))
-cp_eval <- evaluate(p=cpa[,1], a=cpb[,1]) ## calculate ROC's on test set
-plot(cp_eval, 'ROC') ## plot ROC curve
+cp_eval <- evaluate(p=cpa[,1], a=cpb[,1]) ## calculate ROC's on test set (~0.71)
+# plot(cp_eval, 'ROC') ## plot ROC curve
 
 # generate feature mask ---------------------------------------------------
-t <- threshold(cp_eval) ## calculate thresholds based on ROC
+t <- threshold(cp_eval) ## calculate classification threshold based on validation set ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
 mask <- reclassify(si.pred, r) ## reclassify stacked predictions
 
-# write prediction grids --------------------------------------------------
+# write prediction grids to geotif ----------------------------------------
 gspreds <- stack(preds, si.pred, mask)
 names(gspreds) <- c("gm","gl1","gl2","rf","gb","nn","si","mk")
 fname <- paste("./Results/","OAF_", labs, "_preds_2020.tif", sep = "")
@@ -464,11 +469,9 @@ gsout$yldf <- exp(fitted(yld.lme, gsout))
 summary(yld.lme) ## mixed model yield estimate results
 ```
 
-```{r}
-# Quantile regression (uncertainty) plot
-par(pty="s")
-par(mfrow=c(1,1), mar=c(5,5,1,1))
-plot(yield~yldf, xlab="Predicted yield (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
+```{r, fig.align = "center", fig.cap = "Quantile regression plot of modeled potential vs observed maize yields (t/ha) in Western Kenya.}
+par(pty="s", mar=c(3,3,0.2,0.1))
+plot(yield~yldf, xlab="Yield potential (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.3, 
      xlim=c(0,8), ylim=c(0,8), gsout)
 stQ <- rq(yield~yldf, tau=c(0.025,0.5,0.975), data=gsout)
 curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=8, col="blue", lwd=2)
@@ -477,7 +480,7 @@ curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Finally, we write out the complete dataframe, including all of the predictions for reference, reproducability and further use. 
+Finally, we write out the complete dataframe, including all of the predictions for reference, reproducibility and further use. 
 
 ```{r}
 # Write output data frame -------------------------------------------------
