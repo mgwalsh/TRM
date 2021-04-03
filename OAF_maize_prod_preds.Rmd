@@ -151,7 +151,7 @@ Note that you are not limited to only the models that we use. The [`caret`](http
 
 ## Model setups
 
-The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g., [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
+The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any to be removed), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g., [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
 
 ```{r}
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrubs extraneous objects in memory
@@ -485,7 +485,7 @@ curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Finally, we write out the complete dataframe, including all of the predictions for reproducibility, reference and further use. 
+Finally, we write out the complete output dataframe, including all of the predictions for reproducibility, reference and further use. 
 
 ```{r}
 # Write output data frame -------------------------------------------------
