@@ -478,6 +478,8 @@ summary(yld.lme) ## mixed model yield estimate results
 
 ## Uncertainty estimates
 
+There are numerous ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). We are mainly interested in the initial spread of the ROI-wide predictions (sensu, their 95% probable intervals). Once new data are collected, we shall be revising these and will also point out some additional (more spatially data sensitive) techniques.
+
 ```{r, fig.align = "center", fig.cap = "Quantile regression plot of modeled potential vs observed maize yields (t/ha) in Western Kenya. The blue lines are the 2.5% and 97.5% quantile regression estimates."}
 par(pty="s", mar=c(4,4,1,1))
 plot(yield~yldf, xlab="Yield potential (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.4, 
