@@ -298,3 +298,14 @@ abline(c(0,1), col="grey", lwd=1)
 fname <- paste("./Results/","OAF_", labs, "_out.csv", sep = "")
 write.csv(gsout, fname, row.names = F)
 
+library(leaflet)
+library(sp)
+
+sill <- projectRaster(si.pred, crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+
+si <- leaflet() %>% 
+  setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 8) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addRasterImage(sill, colors = pal, opacity = 0.5) %>%
+  addLegend(colors=pal, values = values(sill), title = "SI")
+si ## plot widget 
