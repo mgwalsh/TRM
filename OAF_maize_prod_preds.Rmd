@@ -22,7 +22,7 @@ The SI is the spatial part, which we predict using remote sensing and GIS data w
 
 The example maize yield data we shall use were collected over two cropping seasons (2016 & 2017) by [One Acre Fund (OAF)](https://oneacrefund.org/) in Western Kenya as part of their annual program monitoring activities. This is a fairly large dataset with 5,987 georeferenced plots distributed over the two cropping seasons and across 333 Level-3 administrative areas i.e., *Locations*. The data are split between plots belonging to farmers that were participating in the OAF maize program (*treated*) and those who were not participating (*controls*) at the time. Data on fertilizer input use on each plot (Calcium Ammonium Nitrate & Diammonium Phosphate) and estimated plot size are also included. 
 
-Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering climate, terrain, land surface, soil, vegetation and anthropic factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., land form and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages, among others. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the feature layers have been harmonized and are available for all of Africa. 
+Other than GPS coordinates, the original OAF dataset does not contain any data related to site quality for maize production. We will be using a raster stack with 46 layers covering anthropic, climate, organismal/vegetation, relief/topographical, and geological/soil factors. Though these data are regularly updated, the emphasis is on variables that are expected to change relatively slowly e.g., land form and terrain, climate, soils, parent material, infrastructure, long-term vegetation and reflectance averages, among others. The main reason for this is that these *slow variables* can become key controlling factors for the faster variables such as crop yields, but over longer time scales. It is also opportune that most of the feature layers have been harmonized and are available for all of Africa. 
 
 The notebook is available and will be maintained on [MGWs Github](https://github.com/mgwalsh/TRM/blob/master/OAF_maize_prod_preds.Rmd). To actually run it to calculate and see additional outputs, you will need to load the packages indicated in the chunk directly below. The authors of these packages are gratefully acknowledged for all of their hard work.
 
@@ -49,6 +49,7 @@ This first section of the notebook sets up the survey data and links these to cu
 # Create a data folder in your current working directory
 dir.create("OAF_data", showWarnings=F)
 setwd("./OAF_data")
+dir.create("./Results")
 
 # download OAF yield data
 download("https://www.dropbox.com/s/lhniws8prfvjw9r/OAF_yield_data.csv.zi?raw=1", "OAF_yield_data.csv.zip", mode = "wb")
@@ -69,11 +70,11 @@ glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
 ```
 
-As the `yield` dataframe only covers portions of Western Kenya, we initially define the relevant Area of Interest based on the min/max survey coordinates and crop all of the `grids` raster stack to that bounding box. This is mostly to reduce computing times.
+As the `yield` dataframe only covers portions of Western Kenya, we initially define the relevant [Region of Interest](https://en.wikipedia.org/wiki/Region_of_interest) based on the min/max survey coordinates and crop all of the `grids` raster stack to that bounding box. This is mostly to reduce computing times.
 
 ```{r}
-# set Area of Interest grid extent
-ext <- data.frame(lat = c(-1.2,-1.2,1.2,1.2), lon = c(33.9,35.5,33.9,35.5)) ## set AOI extent in degrees
+# set Region of Interest grid extent
+ext <- data.frame(lat = c(-1.2,-1.2,1.2,1.2), lon = c(33.9,35.5,33.9,35.5)) ## set ROI extent in degrees
 names(ext) <- c("lat","lon")
 coordinates(ext) <- ~ lon + lat
 proj4string(ext) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
@@ -113,8 +114,7 @@ gsdat <- gsdat[which(gsdat$yield > quant[1]), ] ## removes low outlier yields (<
 gsdat <- gsdat[which(gsdat$yield < quant[2]), ] ## removes high outlier yields (>97.5% quantile)
 
 # write out clean dataframe
-dir.create("Results", showWarnings = F)
-write.csv(gsdat, "./Results/OAF_gsdat.csv", row.names = F)
+write.csv(gsdat, "./OAF_data/Results/OAF_gsdat.csv", row.names = F)
 
 # yield survey location map widget
 w <- leaflet() %>%
@@ -147,11 +147,11 @@ boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", xlab="SI label", cex.lab=1
 
 The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models will be ensembled [(stacked)](https://datasciblog.github.io/2016/12/27/a-kagglers-guide-to-model-stacking-in-practice/) on an *independent* validation dataset. When consistently applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field and remote data or different MLAs are obtained and run.
 
-Note that you are not limited to only the models that we use. The [`caret`](https://topepo.github.io/caret/index.html) package, on which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
+Note that you are not limited to only the models that we use. The [`caret`](https://topepo.github.io/caret/index.html) package, which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
 
 ## Model setups
 
-The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any to be removed), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g., [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
+The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any to be removed), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this (e.g., [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
 
 ```{r}
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrubs extraneous objects in memory
@@ -202,7 +202,7 @@ gm <- train(gf_cpv, lcal,
 summary(gm)
 gm.pred <- predict(grids, gm, type = "prob") ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gm.rds", sep = "")
+fname <- paste("./OAF_data/Results/", labs, "_gm.rds", sep = "")
 saveRDS(gm, fname)
 ```
 
@@ -234,7 +234,7 @@ gl1 <- train(gf_cpv, lcal,
 # model outputs & predictions
 gl1.pred <- predict(grids, gl1, type = "prob") ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gl1.rds", sep = "")
+fname <- paste("./OAF_data/Results/", labs, "_gl1.rds", sep = "")
 saveRDS(gl1, fname)
 ```
 
@@ -263,7 +263,7 @@ gl2 <- train(fcal, lcal,
 # model outputs & predictions
 gl2.pred <- predict(grids, gl2, type = "prob") ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gl2.rds", sep = "")
+fname <- paste("./OAF_data/Results/", labs, "_gl2.rds", sep = "")
 saveRDS(gl2, fname)
 ```
 
@@ -294,7 +294,7 @@ rf <- train(fcal, lcal,
 # model outputs & predictions
 rf.pred <- predict(grids, rf, type = "prob") ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_rf.rds", sep = "")
+fname <- paste("./OAF_data/Results/", labs, "_rf.rds", sep = "")
 saveRDS(rf, fname)
 ```
 
@@ -327,7 +327,7 @@ gb <- train(fcal, lcal,
 # model outputs & predictions
 gb.pred <- predict(grids, gb, type = "prob") ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gb.rds", sep = "")
+fname <- paste("./OAF_data/Results/", labs, "_gb.rds", sep = "")
 saveRDS(gb, fname)
 ```
 
@@ -356,7 +356,7 @@ nn <- train(fcal, lcal,
 # model outputs & predictions
 nn.pred <- predict(grids, nn, type = "prob") ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_nn.rds", sep = "")
+fname <- paste("./OAF_data/Results/", labs, "_nn.rds", sep = "")
 saveRDS(nn, fname)
 ```
 
@@ -408,7 +408,7 @@ si <- train(fval, lval,
 # model outputs & predictions
 si.pred <- predict(preds, si, type = "prob") ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_si.rds", sep = "")
+fname <- paste("./OAF_data/Results/", labs, "_si.rds", sep = "")
 saveRDS(si, fname)
 ```
 
@@ -454,7 +454,7 @@ mask <- reclassify(si.pred, r) ## reclassify stacked predictions
 # write prediction grids to geotif ----------------------------------------
 gspreds <- stack(preds, si.pred, mask)
 names(gspreds) <- c("gm","gl1","gl2","rf","gb","nn","si","mk")
-fname <- paste("./Results/","OAF_", labs, "_preds_2020.tif", sep = "")
+fname <- paste("./OAF_data/Results/","OAF_", labs, "_preds_2020.tif", sep = "")
 writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 # Site Index prediction check ---------------------------------------------
@@ -468,7 +468,7 @@ confusionMatrix(gsout$mzone, gsout$qy) ## overall prediction accuracy stats
 
 # Multilevel model of maize yield potentials
 
-We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented aggregate production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the model intercepts i.e., the efficiency parameters of the production function, are allowed to vary by `year` and administrative `location`.
+We use a [Multilevel model](https://en.wikipedia.org/wiki/Multilevel_model) to combine the predicted SIs with the previously presented aggregate production function using the [`arm`](https://www.rdocumentation.org/packages/arm/versions/1.11-2) package. In this particular example we specify a random intercept model with in which the model intercepts i.e., the efficiency parameters of the combined model, are allowed to vary by `year` and administrative `location`.
 
 ```{r}
 yld.lme <- lmer(log(yield)~factor(trt)*log(si/(1-si))+log(can+1)*log(dap+1)+(1|year)+(1|location), data = gsout)
@@ -478,7 +478,7 @@ summary(yld.lme) ## mixed model yield estimate results
 
 ## Uncertainty estimates
 
-There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). The plot below shows the spread of the AOI-wide predictions (sensu, their 95% probable intervals).
+There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). The plot below shows the spread of the ROI-wide predictions (sensu, their 95% probable intervals).
 
 ```{r, fig.align = "center", fig.cap = "Quantile regression plot of modeled potential vs observed maize yields (t/ha) in Western Kenya. The blue lines are the 2.5% and 97.5% quantile regression estimates."}
 par(pty="s", mar=c(4,4,1,1))
@@ -495,6 +495,6 @@ Finally, we write out the complete output dataframe, including all of the predic
 
 ```{r}
 # Write output data frame -------------------------------------------------
-write.csv(gsout, "./Results/OAF_gsout.csv", row.names = F)
+write.csv(gsout, "./OAF_data/Results/OAF_gsout.csv", row.names = F)
 ```
 
