@@ -44,7 +44,7 @@ invisible(lapply(packages, library, character.only = TRUE))
 
 This first section of the notebook sets up the survey data and links these to current remote sensing and GIS data for Kenya that are maintained by [AfSIS (2020)](https://osf.io/4jvnu). The following chunk fetches the data and links these to the remote sensing and GIS layers represented by `grids` variable stack.
 
-```{r}
+```{r, warning=FALSE}
 # Data setup --------------------------------------------------------------
 # Create a data folder in your current working directory
 dir.create("OAF_data", showWarnings=F)
@@ -127,31 +127,31 @@ w ## plot widget
 
 # Fit an aggregate production function
 
-We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional spatial features. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite robust to outlying observations. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields lie above the regression line and group B for which observed yields lie below it. This creates a new variable (`qy`) in the `gsdat` dataframe.  
+We use [Quantile regression]((https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)) to fit a simple [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) type function to the yield survey data ... without any additional spatial features. Median regression (i.e. 50th quantile regression) is preferred to mean regression in this case, because it is quite robust to outlying observations. The residuals of this function are then evaluated and classified into 2 groups of plots: group A for which observed yields lie above the regression line and group B for which observed yields lie below it. This creates a new variable `silab` in the `gsdat` dataframe.  
 
 ```{r}
 # this is a basic production function using quantile regression
-qy.rq <- rq(log(yield)~year+factor(trt)+log(dap+1)*log(can+1), tau = 0.5, data = gsdat)
-gsdat$qy <- as.factor(ifelse(exp(predict(qy.rq, gsdat)) > gsdat$yield, "B", "A")) ## classify the residuals
-summary(qy.rq)
+si.rq <- rq(log(yield)~year+factor(trt)+log(dap+1)*log(can+1), tau = 0.5, data = gsdat)
+gsdat$silab <- as.factor(ifelse(exp(predict(si.rq, gsdat)) > gsdat$yield, "B", "A")) ## classify the residuals
+summary(si.rq)
 ```
 
-As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not attributable** to differences between years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to the spatial characteristics of the production environment ... in other words the SI. 
+As might be expected (and as shown in the boxplot below), there are substantial differences in the observed maize yields between the two, what we shall refer to as **Site Index labels**, which are **not attributable** to differences between years, treatments (OAF *treated vs control*), nor the application of fertilizers. In the next sections we explore to what degree these differences may be attributable to the spatial characteristics of the production environment ... in other words the SI as indicated by `silab`. 
 
 ```{r, echo=FALSE, fig.align = "center", fig.cap = "Differences in observed maize yields (t/ha) between Site Index labels."}
 par(pty="s", mar=c(4,4,1,1))
-boxplot(yield~qy, notch=T, ylab="Maize yield (t/ha)", xlab="SI label", cex.lab=1.4, gsdat)
+boxplot(yield~silab, notch=T, ylab="Maize yield (t/ha)", xlab="SI label", cex.lab=1.4, gsdat)
 ```
 
 # Machine-learning-based predictive mapping of SI
 
-The following chunks generate SI values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models will be ensembled [(stacked)](https://datasciblog.github.io/2016/12/27/a-kagglers-guide-to-model-stacking-in-practice/) on an *independent* validation dataset. When consistently applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field and remote data or different MLAs are obtained and run.
+The following chunks generate `silab` predictions using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) features. The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models will be ensembled [(stacked)](https://datasciblog.github.io/2016/12/27/a-kagglers-guide-to-model-stacking-in-practice/) on an *independent* validation dataset. When consistently applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field and remote data or different MLAs are obtained and run.
 
 Note that you are not limited to only the models that we use. The [`caret`](https://topepo.github.io/caret/index.html) package, which we rely on here, offers many compelling alternatives. We encourage you to explore and experiment with those.
 
 ## Model setups
 
-The following chunk scrubs some of the objects in memory, removes incomplete cases (rows, if there are any to be removed), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this (e.g., [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
+The following chunk scrubs some of the objects in memory and creates a randomized partition between the training and validation dataframes.
 
 ```{r}
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrubs extraneous objects in memory
@@ -161,21 +161,23 @@ seed <- 12358
 set.seed(seed)
 
 # split data into calibration and validation sets
-gsIndex <- createDataPartition(gsdat$qy, p = 4/5, list = F, times = 1)
+gsIndex <- createDataPartition(gsdat$silab, p = 4/5, list = F, times = 1)
 gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Site index calibration labels
-labs <- c("qy")
+labs <- c("silab")
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
 fcal <- gs_cal[,13:31,35:58]
 ```
 
+Note that in running the models below everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this (e.g., [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
+
 ## Spatial trend model ([mgcv](https://cran.r-project.org/web/packages/mgcv/mgcv.pdf))
 
-This is a simple spatially smoothed *generalized additive model* applying the `gam` function on the SI values at different sampling locations in Western Kenya, based only on their georeference. It is similar to ordinary kriging with cross-validation ... but it is simpler and much faster to compute in this context.
+This is a simple spatially smoothed *generalized additive model* applying the `gam` function on the SI label at different sampling locations in Western Kenya, based only on their georeference. It is similar to ordinary indicator kriging with cross-validation ... but it is simpler and much faster to compute in this context.
 
 ```{r, results='hide'}
 # select central place covariates
@@ -463,7 +465,7 @@ projection(gsdat) <- projection(grids)
 gspre <- extract(gspreds, gsdat)
 gsout <- as.data.frame(cbind(gsdat, gspre))
 gsout$mzone <- as.factor(ifelse(gsout$mk == 1, "A", "B"))
-confusionMatrix(gsout$mzone, gsout$qy) ## overall prediction accuracy stats
+confusionMatrix(gsout$mzone, gsout$silab) ## overall prediction accuracy stats
 ```
 
 # Multilevel model of maize yield potentials
