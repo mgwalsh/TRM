@@ -16,7 +16,7 @@ knitr::opts_chunk$set(message = FALSE)
 
 # Introduction
 
-This notebook develops an example of a spatial crop yield prediction model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit multilevel model version of this can be used to gauge the potential productivity of croplands and to provide a comparative frame of reference for evaluating management options.
+This notebook develops an example of a spatial crop yield potential model. The approach consists of a combination of a standard [Production function (PF)](https://en.wikipedia.org/wiki/Production_function) that considers outputs relative to inputs and a novel **Site index (SI)**, which describes the quality of the production environment for the purpose of growing a particular crop. The combined model can be expressed as: **y ~ f (PF, SI)**, and the explicit multilevel model version of this can be used to gauge the potential productivity of croplands and to provide a comparative frame of reference for evaluating management options.
 
 The SI is the spatial part, which we predict using remote sensing and GIS data with machine learning in [R](https://www.r-project.org/). We intend for the approach to be generalizable to other crop productivity surveys and experiments in which both input/output relationships as well as variability in site quality are deemed important for crop management as well as for program impact monitoring and evaluation. 
 
@@ -491,7 +491,7 @@ curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Finally, we write out the complete output dataframe, including all of the predictions for reproducibility, reference and further use. 
+Finally, we write out the complete output dataframe, including all of the predictions for reproducibility, reference and reuse. 
 
 ```{r}
 # Write output data frame -------------------------------------------------
