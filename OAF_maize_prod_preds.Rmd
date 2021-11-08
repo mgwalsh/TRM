@@ -1,6 +1,6 @@
 ---
 title: Predicting spatial yield potentials from survey data
-author: M.G. Walsh, J. Chamberlin, ...
+author: M.G. Walsh, J. Chamberlin and J. Silva
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
   html_document:
@@ -478,15 +478,19 @@ gsout$yldf <- exp(fitted(yld.lme, gsout))
 summary(yld.lme) ## mixed model yield estimate results
 ```
 
-## Uncertainty estimates
+# Uncertainty estimates
 
 There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). The plot below shows the spread of the ROI-wide predictions (sensu, their 95% probable intervals).
+
+```{r}
+stQ <- rq(yield~yldf, tau=c(0.025,0.5,0.975), data=gsout) ## quantile regression fit
+print(stQ)
+```
 
 ```{r, fig.align = "center", fig.cap = "Quantile regression plot of modeled potential vs observed maize yields (t/ha) in Western Kenya. The blue lines are the 2.5% and 97.5% quantile regression estimates."}
 par(pty="s", mar=c(4,4,1,1))
 plot(yield~yldf, xlab="Yield potential (t/ha)", ylab="Measured yield (t/ha)", cex.lab=1.4, 
      xlim=c(0,8), ylim=c(0,8), gsout)
-stQ <- rq(yield~yldf, tau=c(0.025,0.5,0.975), data=gsout)
 curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=8, col="blue", lwd=2)
 curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=8, col="red", lwd=2)
 curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue", lwd=2)
