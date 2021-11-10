@@ -1,6 +1,6 @@
 ---
 title: Predicting spatial yield potentials from survey data
-author: M.G. Walsh, J. Chamberlin and J. Silva
+author: M.G. Walsh, J. Chamberlin, J. Silva and S. Aston
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
   html_document:
@@ -497,10 +497,9 @@ curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=8, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Finally, we write out the complete output dataframe, including all of the predictions for reproducibility, reference and reuse. 
+We can now write out the complete output dataframe, including all of the predictions for reproducibility, reference and reuse. 
 
 ```{r}
 # Write output data frame -------------------------------------------------
 write.csv(gsout, "./OAF_data/Results/OAF_gsout.csv", row.names = F)
 ```
-
